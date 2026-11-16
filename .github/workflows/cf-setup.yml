@@ -1,0 +1,27 @@
+# Cloudflare の準備（合鍵の確認・データベース作成）。.github/run-cf-setup を更新すると動く
+name: Cloudflareの準備
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/run-cf-setup"]
+permissions:
+  contents: read
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ACC: 69e27b15e9afab57457ca48ad9170b79
+    steps:
+      - name: 合鍵の確認
+        run: |
+          curl -s https://api.cloudflare.com/client/v4/user/tokens/verify -H "Authorization: Bearer $CF_TOKEN" | jq '{success, status: .result.status, errors}'
+      - name: データベース（hakodig）がなければ作る
+        run: |
+          api() { curl -s "https://api.cloudflare.com/client/v4/accounts/$ACC/$1" -H "Authorization: Bearer $CF_TOKEN" -H "content-type: application/json" "${@:2}"; }
+          id=$(api "d1/database?name=hakodig" | jq -r '.result[0].uuid // empty')
+          if [ -z "$id" ]; then api d1/database -X POST -d '{"name":"hakodig","primary_location_hint":"apac"}' | jq '{success, errors, name: .result.name, uuid: .result.uuid}'; else echo "既にあります: $id"; fi
+      - name: workers.dev のサブドメイン
+        run: |
+          curl -s "https://api.cloudflare.com/client/v4/accounts/$ACC/workers/subdomain" -H "Authorization: Bearer $CF_TOKEN" | jq '{success, subdomain: .result.subdomain, errors}'
