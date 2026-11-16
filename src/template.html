@@ -494,7 +494,8 @@ const onSale = g => !!(g.price && g.price.off > 0);
 const viewTab = () => $("#q").value.trim() ? "all" : tab;
 // 発売日の記載がない（仮の日付 9998年など）作品は、サブスク対象・購入できる価格・ストアの評価のどれかがあれば発売済み
 const PREVIEW = /game preview|ゲーム ?プレビュー/i;
-const released = g => g.d ? g.d <= TODAY : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0) || PREVIEW.test(g.t));
+// Xbox 360・XBLA など旧世代の作品はIDが英字で始まる（今の作品は 9 から始まる）
+const released = g => g.d ? g.d <= TODAY : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0) || PREVIEW.test(g.t) || !/^9/.test(g.id));
 function inTab(g){
   const v = viewTab();
   if (v === "all") return true;
