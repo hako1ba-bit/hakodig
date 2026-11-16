@@ -3,7 +3,7 @@ name: サイトの作り直し
 on:
   push:
     branches: [main]
-    paths: ["src/**", "scripts/build.py", "data/aliases.json", "data/overrides.json", ".github/run-build"]
+    paths: ["src/**", "worker/**", "wrangler.toml", "scripts/build.py", "data/aliases.json", "data/overrides.json", ".github/run-build"]
   workflow_dispatch:
 
 permissions:
@@ -27,8 +27,18 @@ jobs:
         with:
           python-version: "3.12"
       - run: python scripts/build.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Cloudflare に公開（データベースの更新も）
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx -y wrangler@4.151.0 d1 migrations apply hakodig --remote
+          npx -y wrangler@4.151.0 deploy
+      # 旧アドレス（GitHub Pages）は新しいアドレスへの案内だけにする
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: src/redirect
       - id: deploy
         uses: actions/deploy-pages@v4

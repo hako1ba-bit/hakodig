@@ -118,5 +118,23 @@ with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as f:
     f.write(page)
 open(os.path.join(OUT, ".nojekyll"), "w").close()
 
+# 安全のためのヘッダー。ページ内のプログラムは、このページに書いたもの（ハッシュで指定）以外は動かさない
+import hashlib, base64
+sh = lambda x: "'sha256-" + base64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'"
+scripts = re.findall(r"<script>(.*?)</script>", page, re.S)
+csp = "; ".join([
+    "default-src 'self'",
+    "script-src " + " ".join(sh(x) for x in scripts),
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' data: https://store-images.s-microsoft.com",
+    "connect-src 'self'",
+    "base-uri 'none'", "form-action 'self'", "frame-ancestors 'none'", "object-src 'none'",
+])
+with open(os.path.join(OUT, "_headers"), "w") as f:
+    f.write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n"
+            "  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\n"
+            "  Strict-Transport-Security: max-age=31536000\n  Content-Security-Policy: " + csp + "\n")
+
 done = sum(1 for g in games if "lp" not in g)
 print(f"built: {len(games)} games, first {len(first)}, rest {len(rest)}, language info {done}/{len(games)}")

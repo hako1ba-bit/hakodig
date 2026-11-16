@@ -1,0 +1,24 @@
+# ハコディグ本体（サイト＋ログイン・コメント用API）。GitHub Actions から deploy する
+name = "hakodig"
+main = "worker/index.js"
+compatibility_date = "2026-10-01"
+account_id = "69e27b15e9afab57457ca48ad9170b79"
+workers_dev = true
+preview_urls = false
+
+[vars]
+SITE = "https://hakodig.hakoichiba.workers.dev"
+
+[assets]
+directory = "./_site"
+binding = "ASSETS"
+not_found_handling = "none"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hakodig"
+database_id = "1fe5e6a1-2dd7-49f1-ade7-3c62e5642636"
+migrations_dir = "worker/migrations"
+
+[observability]
+enabled = false

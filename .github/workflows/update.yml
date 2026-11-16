@@ -22,8 +22,6 @@ on:
 permissions:
   actions: write
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: update
@@ -53,9 +51,6 @@ jobs:
     if: needs.check.outputs.go == 'yes'
     runs-on: ubuntu-latest
     timeout-minutes: 355
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -81,11 +76,15 @@ jobs:
         run: sh scripts/commit_data.sh "言語情報"
       - name: サイトを作る
         run: python scripts/build.py
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/setup-node@v4
         with:
-          path: _site
-      - id: deploy
-        uses: actions/deploy-pages@v4
+          node-version: "22"
+      - name: Cloudflare に公開（データベースの更新も）
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx -y wrangler@4.151.0 d1 migrations apply hakodig --remote
+          npx -y wrangler@4.151.0 deploy
       - name: 未取得が残っていれば、続きを起動する
         if: steps.details.outputs.left != '0'
         env:
