@@ -25,6 +25,8 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
+    if r.get("gx"):
+        g["gx"] = r["gx"]  # ゲームパスの終了予定日
     if r.get("rc"):
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if gid in force_rel:

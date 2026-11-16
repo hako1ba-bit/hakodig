@@ -23,10 +23,22 @@ def compact(p):
     d = (p.get("releaseDate") or "")[:10] or None
     if d and d >= "2100":  # 9998年・2799年などの仮の日付
         d = None
-    gp = {PASS[k] for k in list(p.get("passMetadataByPassProductId") or {}) + list(p.get("includedWithPassesProductIds") or []) if k in PASS}
+    # passMetadata には過去の参加履歴も残っている。外れた日（exitDateUTC）が過ぎたプランは除き、未来なら終了予定日として残す
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    gp, gx = {PASS[k] for k in p.get("includedWithPassesProductIds") or [] if k in PASS}, {}
+    for k, m in (p.get("passMetadataByPassProductId") or {}).items():
+        if k not in PASS:
+            continue
+        ex = (m or {}).get("exitDateUTC") or ""
+        if not ex:
+            gp.add(PASS[k])
+        elif ex > now:
+            gp.add(PASS[k])
+            jst = datetime.datetime.fromisoformat(ex.replace("Z", "+00:00")) + datetime.timedelta(hours=9)
+            gx[PASS[k]] = jst.date().isoformat()
     return {"id": p["productId"], "t": p.get("title") or "", "pub": (p.get("publisherName") or "").strip(),
             "cat": (p.get("categories") or [""])[0], "d": d, "pl": p.get("availableOn") or [],
-            "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0,
+            "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0, **({"gx": gx} if gx else {}),
             **({"big": 1} if (p.get("maxInstallSize") or 0) >= 1_000_000_000 else {})}
 
 

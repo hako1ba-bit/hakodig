@@ -72,6 +72,8 @@ legend{font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom
 .tags{display:flex;flex-wrap:wrap;gap:4px}
 .tag{font-size:11px;padding:1px 7px;border-radius:4px;background:var(--chip);color:var(--muted);white-space:nowrap}
 .tag.gp{background:var(--accent-soft);color:var(--on);font-weight:500}
+.gx{margin-left:4px;font-weight:700;color:var(--warn)}
+.tag.sel .gx{color:var(--accent-ink)}
 .tag.sel{background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:0 0 10px var(--glow)}
 .jp{display:flex;flex-direction:column;gap:4px;align-items:flex-end;min-width:150px}
 .jp .lab{font-size:10.5px;letter-spacing:.08em;color:var(--muted)}
@@ -320,6 +322,7 @@ function group(RAW){
       if (!x.lang && g.lang) x.lang = g.lang;
       if (!x.e && g.e) x.e = g.e;
       if (!x.lo && g.lo) x.lo = g.lo;
+      if (g.gx) x.gx = Object.assign({}, x.gx, g.gx);
       if (!x.img && g.img) x.img = g.img;
       if (!x.desc && g.desc){ x.desc = g.desc; x.descCut = g.descCut; }
     }
@@ -464,7 +467,7 @@ function card(g){
   const src = g.img && !/^(data:|https?:)/.test(g.img) ? IMG_BASE + g.img + IMG_SIZE : g.img;
   const img = src ? `<img class="thumb" src="${src}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(g.t.slice(0,1))}</span>`;
   const tags = [
-    ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}</span>`),
+    ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}</span>` : ""}</span>`),
     g.pa ? `<span class="tag${SEL.pa ? " sel" : ""}">Play Anywhere</span>` : "",
     ...g.pl.filter(x => PL[x]).map(x => `<span class="tag${SEL.pl.has(x) ? " sel" : ""}">${PL[x]}</span>`)
   ].join("");
