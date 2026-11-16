@@ -492,8 +492,8 @@ function card(g){
 const onSale = g => !!(g.price && g.price.off > 0);
 // 検索語が入っているときは、タブに関係なく全ゲームから探す
 const viewTab = () => $("#q").value.trim() ? "all" : tab;
-// 発売済みかどうか。発売日の記載がなくても、ゲームパス・サブスクの対象なら発売済みとみなす（EA Play 経由のPC版など）
-const released = g => g.d ? g.d <= TODAY : g.gp.length > 0;
+// 発売日の記載がない（仮の日付 9998年など）作品は、サブスク対象・購入できる価格・ストアの評価のどれかがあれば発売済み
+const released = g => g.d ? g.d <= TODAY : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0));
 function inTab(g){
   const v = viewTab();
   if (v === "all") return true;

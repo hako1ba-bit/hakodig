@@ -21,6 +21,8 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
+    if r.get("rc"):
+        g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if r.get("xpa") or dt.get("pa"):
         g["pa"] = 1
     if gid in det and not dt.get("none"):
