@@ -26,7 +26,8 @@ def compact(p):
     gp = {PASS[k] for k in list(p.get("passMetadataByPassProductId") or {}) + list(p.get("includedWithPassesProductIds") or []) if k in PASS}
     return {"id": p["productId"], "t": p.get("title") or "", "pub": (p.get("publisherName") or "").strip(),
             "cat": (p.get("categories") or [""])[0], "d": d, "pl": p.get("availableOn") or [],
-            "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0}
+            "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0,
+            **({"big": 1} if (p.get("maxInstallSize") or 0) >= 1_000_000_000 else {})}
 
 
 # 1. 全作品の一覧（発売日の新しい順）

@@ -23,6 +23,8 @@ for gid, r in cat.items():
         g["e"] = r["e"]
     if r.get("rc"):
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
+    if r.get("big"):
+        g["big"] = 1  # インストールサイズが1GB以上（中身が配信されている目印）
     if r.get("xpa") or dt.get("pa"):
         g["pa"] = 1
     if gid in det and not dt.get("none"):
@@ -44,7 +46,13 @@ nt = lambda x: re.sub(r"^windows store\s*-\s*", "", re.sub(r"[®™©]", "", x).
 SOUND = re.compile(r"soundtrack|サウンドトラック|\bost\b|artbook|アートブック", re.I)
 WITHGAME = re.compile(r"edition|エディション|bundle|バンドル|版", re.I)
 PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
-rel_titles = sorted({nt(g["t"]) for g in games if g["d"] and g["d"] <= T}, key=len, reverse=True)
+PREVIEW = re.compile(r"game preview|ゲーム ?プレビュー", re.I)
+def is_released(g):  # src/template.html の released() と同じ判定
+    if g["d"]:
+        return g["d"] <= T
+    return bool(g["gp"] or g.get("rc") or (g.get("pr") and g["pr"][0]) or PREVIEW.search(g["t"])
+                or not g["id"].startswith("9") or "XCloud" in g["pl"] or g.get("big"))
+rel_titles = sorted({nt(g["t"]) for g in games if is_released(g)}, key=len, reverse=True)
 rel_set = set(rel_titles)
 sib, hidden, keep = 0, 0, []
 for g in games:
@@ -58,7 +66,7 @@ for g in games:
         hidden += 1
         continue
     keep.append(g)
-    if g["d"]:
+    if is_released(g):
         continue
     for base in rel_titles:
         if len(base) >= 6 and t != base and t.startswith(base) and EDITION.match(t[len(base):]):
