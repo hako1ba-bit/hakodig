@@ -3,7 +3,7 @@ name: サイトの作り直し
 on:
   push:
     branches: [main]
-    paths: ["src/**", "scripts/build.py", "data/aliases.json"]
+    paths: ["src/**", "scripts/build.py", "data/aliases.json", ".github/run-build"]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: build
   cancel-in-progress: false
 
 jobs:
