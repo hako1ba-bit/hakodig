@@ -7,12 +7,16 @@ on:
     inputs:
       detail_minutes:
         description: 言語情報の取得に使う時間（分）
-        default: "150"
+        default: "300"
+      skip_list:
+        description: 一覧の取得を省く（続きの取得だけ行う）
+        default: "no"
   push:
     branches: [main]
     paths: [".github/run-update"]
 
 permissions:
+  actions: write
   contents: write
   pages: write
   id-token: write
@@ -24,7 +28,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 355
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -34,11 +38,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: 一覧・価格・サブスク・Play Anywhere を取得
+        if: inputs.skip_list != 'yes'
         run: python scripts/update_list.py
       - name: 一覧を保存
+        if: inputs.skip_list != 'yes'
         run: sh scripts/commit_data.sh "一覧更新"
       - name: 言語情報を取得（決めた時間まで）
-        run: python scripts/update_details.py --minutes ${{ inputs.detail_minutes || '150' }}
+        id: details
+        run: python scripts/update_details.py --minutes ${{ inputs.detail_minutes || '300' }}
       - name: 言語情報を保存
         run: sh scripts/commit_data.sh "言語情報"
       - name: サイトを作る
@@ -48,3 +55,8 @@ jobs:
           path: _site
       - id: deploy
         uses: actions/deploy-pages@v4
+      - name: 未取得が残っていれば、続きを起動する
+        if: steps.details.outputs.left != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run update.yml --ref main -f skip_list=yes -f detail_minutes=300

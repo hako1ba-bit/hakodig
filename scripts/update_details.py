@@ -57,3 +57,6 @@ for gid in queue:
 save_jsonl("details.jsonl", det)
 left = sum(1 for i in cat if i not in det)
 print(f"fetched {n}; {left} still missing", flush=True)
+if os.environ.get("GITHUB_OUTPUT"):
+    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        f.write(f"left={left}\n")
