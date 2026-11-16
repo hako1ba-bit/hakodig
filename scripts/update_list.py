@@ -21,7 +21,7 @@ def compact(p):
     if img and img.startswith(IMG_PREFIX):
         img = img[len(IMG_PREFIX):]
     d = (p.get("releaseDate") or "")[:10] or None
-    if d and d >= "9000":
+    if d and d >= "2100":  # 9998年・2799年などの仮の日付
         d = None
     gp = {PASS[k] for k in list(p.get("passMetadataByPassProductId") or {}) + list(p.get("includedWithPassesProductIds") or []) if k in PASS}
     return {"id": p["productId"], "t": p.get("title") or "", "pub": (p.get("publisherName") or "").strip(),

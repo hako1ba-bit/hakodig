@@ -49,7 +49,7 @@ for gid in queue:
         rec = {"id": gid, "lang": lang, "pa": int("XPA" in (p.get("capabilities") or {})),
                "desc": " ".join((p.get("description") or "").split())[:200], "at": T}
         rd = (p.get("releaseDate") or "")[:10]
-        if rd and rd < "9000":
+        if rd and rd < "2100":
             rec["d"] = rd
         det[gid] = rec
     n += 1

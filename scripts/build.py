@@ -17,7 +17,7 @@ games, desc = [], {}
 for gid, r in cat.items():
     dt = det.get(gid, {})
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
-         "d": r.get("d") or dt.get("d"), "pl": r.get("pl", []), "gp": r.get("gp", []),
+         "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
