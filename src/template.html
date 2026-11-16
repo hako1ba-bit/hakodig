@@ -203,6 +203,9 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
           <label class="opt"><input type="checkbox" id="f-gp-ea" data-gp="EA Play"><span>EA Play</span></label>
           <label class="opt"><input type="checkbox" id="f-gp-ubi" data-gp="Ubisoft+"><span>Ubisoft+</span></label>
         </div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="f-leaving" data-f="leaving"><span>もうすぐ終了（終了予定日あり）</span></label>
+        </div>
         <p class="note">複数選ぶと、どれかに含まれる作品を表示</p>
       </fieldset>
       <fieldset class="sec" data-sec="pl">
@@ -258,6 +261,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
             <option value="priceAsc">価格の安い順</option>
             <option value="priceDesc">価格の高い順</option>
             <option value="discount">割引率の高い順</option>
+            <option value="leaving">ゲームパス終了が近い順</option>
           </select>
         </label>
       </div>
@@ -394,6 +398,8 @@ function relevance(g, q){
   if (r > 2 && hitAlt(g, q)) r = 2;
   return r < 9 ? r : 4;
 }
+// ゲームパスの終了予定日のうち、いちばん早い日（なければ null）
+const leaveDate = g => g.gx ? Object.values(g.gx).sort()[0] : null;
 function jaState(g){ if(g.lp && !g.lang) return "pending"; if(!g.lang) return "na"; return g.lang.some(Boolean) ? "yes" : "no"; }
 
 function pass(g){
@@ -412,6 +418,7 @@ function pass(g){
   if (f.jaSub && !(g.lang && g.lang[2])) return false;
   if (f.pa && !g.pa) return false;
   if (f.sale && !(g.price && g.price.off > 0)) return false;
+  if (f.leaving && !leaveDate(g)) return false;
   if (gp.length && !gp.some(x => g.gp.includes(x))) return false;
   if (pl.length && !pl.every(x => g.pl.includes(x))) return false;
   if (genres.length && !genres.includes(g.cat)) return false;
@@ -552,6 +559,7 @@ function render(){
   if (sort === "priceAsc") pool.sort((a,b) => pv(a, Infinity) - pv(b, Infinity) || byDate(a,b));
   else if (sort === "priceDesc") pool.sort((a,b) => pv(b, -1) - pv(a, -1) || byDate(a,b));
   else if (sort === "discount") pool.sort((a,b) => ((b.price && b.price.off) || 0) - ((a.price && a.price.off) || 0) || byDate(a,b));
+  else if (sort === "leaving") pool.sort((a,b) => (leaveDate(a) || "9999").localeCompare(leaveDate(b) || "9999") || byDate(a,b));
   else pool.sort(byDate);
   // 検索語があるときは、一致の度合いが高い作品を先に出す（価格順などを選んだときはその順を優先）
   const qn = norm($("#q").value.trim());
