@@ -1,7 +1,7 @@
 # ハコディグル
 
 Xbox日本ストア検索サポート（非公式） by ハコイチバ
-https://hako1ba-bit.github.io/hakosearch/
+https://hako1ba-bit.github.io/hakodig/
 
 ## しくみ
 
