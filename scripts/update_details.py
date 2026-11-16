@@ -5,6 +5,7 @@ from common import *
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--minutes", type=float, default=50)
+ap.add_argument("--rotate", type=int, default=1500, help="古い順に確認し直す本数（1日あたり）")
 args = ap.parse_args()
 
 cat = load_jsonl("catalog.jsonl")
@@ -18,8 +19,11 @@ missing = [i for i in cat if i not in det]
 first = [i for i in missing if (cat[i].get("d") or "9999") >= recent]
 rest = sorted((i for i in missing if (cat[i].get("d") or "9999") < recent), key=lambda i: cat[i].get("d") or "", reverse=True)
 refresh = [i for i, r in det.items() if i in cat and (cat[i].get("d") or "9999") >= today(-14) and r.get("at", "") <= week_ago]
-queue = first + rest + refresh
-print(f"details: {len(det)} done, {len(missing)} missing, {len(refresh)} to refresh", flush=True)
+# 全作品を少しずつ、確認日の古い順に確認し直す（アップデートで日本語が付いた作品などを拾う）
+done_q = set(first + rest + refresh)
+rotate = sorted((i for i in det if i in cat and i not in done_q), key=lambda i: det[i].get("at", ""))[:args.rotate] if not missing else []
+queue = first + rest + refresh + rotate
+print(f"details: {len(det)} done, {len(missing)} missing, {len(refresh)} to refresh, {len(rotate)} to recheck", flush=True)
 
 end = time.time() + args.minutes * 60
 n = 0
