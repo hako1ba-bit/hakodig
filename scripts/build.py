@@ -36,6 +36,8 @@ for gid, r in cat.items():
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if gid in force_rel:
         g["rs"] = 1  # 手動で発売済みに指定
+    elif not g["d"] and gid in low:
+        g["rs"] = 1  # 一度でも価格が付いた作品は発売済み（販売終了で価格が消えても発売予定に戻さない）
     if r.get("big"):
         g["big"] = 1  # インストールサイズが1GB以上（中身が配信されている目印）
     if r.get("xpa") or dt.get("pa"):
@@ -64,7 +66,7 @@ def is_released(g):  # src/template.html の released() と同じ判定
     if g["d"]:
         return g["d"] <= T
     return bool(g["gp"] or g.get("rc") or (g.get("pr") and g["pr"][0]) or PREVIEW.search(g["t"])
-                or not g["id"].startswith("9") or "XCloud" in g["pl"] or g.get("big"))
+                or not g["id"].startswith("9") or "XCloud" in g["pl"] or g.get("big") or g.get("rs"))
 rel_titles = sorted({nt(g["t"]) for g in games if is_released(g)}, key=len, reverse=True)
 rel_set = set(rel_titles)
 sib, hidden, keep = 0, 0, []
