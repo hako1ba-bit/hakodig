@@ -1,8 +1,12 @@
 # 毎日 4:17（日本時間）にストアの情報を取り直し、サイトを更新する
+# GitHubの定時実行は飛ばされることがあるので、5:47・7:17 にも予備で起動する。
+# 予備の回は、その日の一覧更新が済んでいれば何もせず終わる。
 name: 毎日の更新
 on:
   schedule:
     - cron: "17 19 * * *"
+    - cron: "47 20 * * *"
+    - cron: "17 22 * * *"
   workflow_dispatch:
     inputs:
       detail_minutes:
@@ -26,7 +30,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.c.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: 今日の更新が済んでいるか確認（定時実行のときだけ）
+        id: c
+        run: |
+          today=$(TZ=Asia/Tokyo date +%F)
+          done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('list_at',''))")
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$done" = "$today" ]; then
+            echo "今日（$today）の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=yes" >> "$GITHUB_OUTPUT"
+          fi
   update:
+    needs: check
+    if: needs.check.outputs.go == 'yes'
     runs-on: ubuntu-latest
     timeout-minutes: 355
     environment:
