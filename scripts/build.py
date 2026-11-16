@@ -41,12 +41,18 @@ for gid, r in cat.items():
 import re
 EDITION = re.compile(r"^\s*([-–—:：(（/]|edition|版|エディション|deluxe|gold|ultimate|complete|standard|premium|definitive|bundle|collection|デラックス|ゴールド|アルティメット|コンプリート|スタンダード|プレミアム|バンドル)", re.I)
 nt = lambda x: re.sub(r"^windows store\s*-\s*", "", re.sub(r"[®™©]", "", x).replace("’", "'").replace("‘", "'").lower().strip())
+SOUND = re.compile(r"soundtrack|サウンドトラック|\bost\b|artbook|アートブック", re.I)
+WITHGAME = re.compile(r"edition|エディション|bundle|バンドル|版", re.I)
 PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
 rel_titles = sorted({nt(g["t"]) for g in games if g["d"] and g["d"] <= T}, key=len, reverse=True)
 rel_set = set(rel_titles)
 sib, hidden, keep = 0, 0, []
 for g in games:
     t = nt(g["t"])
+    # サウンドトラック・アートブックだけの商品は表示しない（ゲーム付きのエディションは残す）
+    if SOUND.search(t) and not WITHGAME.search(t):
+        hidden += 1
+        continue
     # 予約版: 発売日を過ぎた、または本編が発売済みなら表示しない
     if PRE.search(t) and ((g["d"] and g["d"] <= T) or PRE.sub("", t).strip() in rel_set):
         hidden += 1
@@ -60,7 +66,7 @@ for g in games:
             sib += 1
             break
 games = keep
-print("hidden pre-orders:", hidden)
+print("hidden (pre-orders, soundtracks):", hidden)
 print("dateless editions of released games:", sib)
 
 # 最初に読み込む分（直近2週間・発売予定）と、後から読み込む分に分ける
