@@ -197,6 +197,12 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
         </div>
         <p class="note">複数選ぶと、どれかに含まれる作品を表示</p>
       </fieldset>
+      <fieldset class="sec" data-sec="pa">
+        <legend>Play Anywhere</legend>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="f-pa" data-f="pa"><span>Xbox Play Anywhere 対応</span></label>
+        </div>
+      </fieldset>
       <fieldset class="sec" data-sec="price">
         <legend>価格</legend>
         <div class="opts">
@@ -217,9 +223,8 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
         <p class="note">複数選ぶと、どれかに当てはまる作品を表示</p>
       </fieldset>
       <fieldset class="sec" data-sec="pl">
-        <legend>機種・機能</legend>
+        <legend>機種</legend>
         <div class="opts">
-          <label class="opt"><input type="checkbox" id="f-pa" data-f="pa"><span>Play Anywhere</span></label>
           <label class="opt"><input type="checkbox" id="f-pl-xsx" data-pl="XboxSeriesX"><span>Series X|S</span></label>
           <label class="opt"><input type="checkbox" id="f-pl-one" data-pl="XboxOne"><span>Xbox One</span></label>
           <label class="opt"><input type="checkbox" id="f-pl-pc" data-pl="PC"><span>PC</span></label>
@@ -580,9 +585,9 @@ function counts(){
 }
 
 // 検索項目の並べ替え（この端末のブラウザに保存）
-const ORDER_KEY = "hakoichiba-search-order-v1";
+const ORDER_KEY = "hakoichiba-search-order-v2";
 const secs = $("#secs");
-const titles = {ja:"日本語", gp:"ゲームパス", price:"価格", genre:"ジャンル", pl:"機種・機能"};
+const titles = {ja:"日本語", gp:"ゲームパス", pa:"Play Anywhere", price:"価格", genre:"ジャンル", pl:"機種"};
 function loadOrder(){
   try {
     const o = JSON.parse(localStorage.getItem(ORDER_KEY) || "null");
