@@ -40,23 +40,27 @@ for gid, r in cat.items():
 # 発売日の記載がない作品のうち、同じ発行元の発売済み作品の別エディション・別版は発売済みとみなす
 import re
 EDITION = re.compile(r"^\s*([-–—:：(（/]|edition|版|エディション|deluxe|gold|ultimate|complete|standard|premium|definitive|bundle|collection|デラックス|ゴールド|アルティメット|コンプリート|スタンダード|プレミアム|バンドル)", re.I)
-nt = lambda x: re.sub(r"[®™©]", "", x).replace("’", "'").replace("‘", "'").lower().strip()
-by_pub = {}
+nt = lambda x: re.sub(r"^windows store\s*-\s*", "", re.sub(r"[®™©]", "", x).replace("’", "'").replace("‘", "'").lower().strip())
+PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
+rel_titles = sorted({nt(g["t"]) for g in games if g["d"] and g["d"] <= T}, key=len, reverse=True)
+rel_set = set(rel_titles)
+sib, hidden, keep = 0, 0, []
 for g in games:
-    if g["d"] and g["d"] <= T:
-        by_pub.setdefault(g["pub"].lower(), []).append(nt(g["t"]))
-for v in by_pub.values():
-    v.sort(key=len, reverse=True)
-sib = 0
-for g in games:
+    t = nt(g["t"])
+    # 予約版: 発売日を過ぎた、または本編が発売済みなら表示しない
+    if PRE.search(t) and ((g["d"] and g["d"] <= T) or PRE.sub("", t).strip() in rel_set):
+        hidden += 1
+        continue
+    keep.append(g)
     if g["d"]:
         continue
-    t = nt(g["t"])
-    for base in by_pub.get(g["pub"].lower(), []):
-        if len(base) >= 4 and t != base and t.startswith(base) and EDITION.match(t[len(base):]):
+    for base in rel_titles:
+        if len(base) >= 6 and t != base and t.startswith(base) and EDITION.match(t[len(base):]):
             g["rs"] = 1
             sib += 1
             break
+games = keep
+print("hidden pre-orders:", hidden)
 print("dateless editions of released games:", sib)
 
 # 最初に読み込む分（直近2週間・発売予定）と、後から読み込む分に分ける
