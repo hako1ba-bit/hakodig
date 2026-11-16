@@ -29,6 +29,9 @@ for gid, r in cat.items():
     gx = {k: v for k, v in (r.get("gx") or {}).items() if T <= v <= today(60)}
     if gx:
         g["gx"] = gx
+    gn = {k: v for k, v in (r.get("gn") or {}).items() if T < v <= today(60)}
+    if gn:
+        g["gn"] = gn  # ゲームパスに近日追加
     if r.get("rc"):
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if gid in force_rel:
