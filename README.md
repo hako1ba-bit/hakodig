@@ -1,24 +1,33 @@
 # ハコサーチ
 
 Xbox日本ストア検索サポート（非公式） by ハコイチバ
+https://hako1ba-bit.github.io/hakosearch/
 
-## 中身
+## しくみ
 
-- `index.html` … ページ本体。直近2週間・発売予定の作品データを含む（圧縮後 約190KB）
-- `all.json` … それ以外の全作品データ。ページ表示後に裏で読み込む（圧縮後 約1.4MB）
+- **毎日 4:17（日本時間）** に GitHub Actions（「毎日の更新」）が自動で動き、ストアの一覧・価格・セール・サブスク・Play Anywhere を取り直し、言語情報をまだ取っていない作品から順に取得して、サイトを更新します。
+- ページのデザイン（`src/template.html`）や別名の対応表（`data/aliases.json`）を変えると、「サイトの作り直し」が動いて数分で反映されます。
+- ストアへの通信は1秒以上の間隔をあけて、順番に行います。
 
-ゲームの画像は公式の画像サーバー（store-images.s-microsoft.com）から、表示中の作品の分だけ小さいサイズで読み込みます。画像ファイルはこの一式に含まれていません。
+## フォルダ
 
-## 公開のしかた（GitHub Pages）
+| 場所 | 中身 |
+|---|---|
+| `src/template.html` | ページ本体のひな形 |
+| `scripts/` | 取得（`update_list.py`, `update_details.py`）とサイト生成（`build.py`） |
+| `data/catalog.jsonl` | 全作品の基本情報・価格・サブスク（1作品1行） |
+| `data/details.jsonl` | 言語情報・Play Anywhere・説明文（1作品1行） |
+| `data/low.jsonl` | 記録上の最安値（2026-11-14 から記録） |
+| `data/aliases.json` | 別名の対応表（例: バイオハザード → bio, resident evil） |
 
-1. GitHub で新しいリポジトリを作る（公開リポジトリ）
-2. この2ファイル（index.html と all.json）をアップロードする
-3. リポジトリの Settings → Pages で、Branch を `main`・フォルダを `/ (root)` にして Save
-4. 数分後に `https://<ユーザー名>.github.io/<リポジトリ名>/` で公開される
+## 別名の追加のしかた
 
-GitHub Pages は配信時に自動で圧縮するので、追加の設定は不要です。
+`data/aliases.json` に1行足すだけです。左がタイトルに含まれる言葉、右が検索で使われそうな呼び方です。
 
-## 注意
+```json
+"バイオハザード": ["bio", "biohazard", "resident evil", "re"],
+```
 
-- ファイルをパソコンで直接ダブルクリックして開くと、`all.json` の読み込みがブラウザに止められます。確認はアップロード後のURLで行ってください。
-- データは 2026-11-14 時点。言語情報は11月発売分のみ取得済みで、それ以外は「準備中」と表示されます。
+## 手動で更新を動かすとき
+
+GitHub の「Actions」タブ →「毎日の更新」→「Run workflow」。

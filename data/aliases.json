@@ -1,0 +1,22 @@
+{
+ "バイオハザード": ["bio", "biohazard", "resident evil", "re"],
+ "龍が如く": ["yakuza", "ryu ga gotoku", "like a dragon"],
+ "ロックマン": ["rockman", "mega man", "megaman"],
+ "悪魔城ドラキュラ": ["castlevania"],
+ "ストリートファイター": ["street fighter", "スト"],
+ "ファイナルファンタジー": ["ff", "final fantasy"],
+ "ドラゴンクエスト": ["dq", "dragon quest", "ドラクエ"],
+ "ペルソナ": ["persona"],
+ "アーマード・コア": ["armored core", "ac"],
+ "エースコンバット": ["ace combat"],
+ "デビル メイ クライ": ["devil may cry", "dmc"],
+ "モンスターハンター": ["monster hunter", "モンハン", "mh"],
+ "グランド・セフト・オート": ["gta", "grand theft auto"],
+ "コール オブ デューティ": ["cod", "call of duty"],
+ "テイルズ オブ": ["tales of"],
+ "メタルギア": ["metal gear", "mgs"],
+ "鉄拳": ["tekken"],
+ "ソニック": ["sonic"],
+ "マインクラフト": ["minecraft", "マイクラ"],
+ "フォートナイト": ["fortnite"]
+}
