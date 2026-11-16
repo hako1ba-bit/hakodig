@@ -43,6 +43,11 @@ jobs:
       - name: 一覧を保存
         if: inputs.skip_list != 'yes'
         run: sh scripts/commit_data.sh "一覧更新"
+      - name: 一覧の更新をすぐサイトに反映する
+        if: inputs.skip_list != 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build.yml --ref main
       - name: 言語情報を取得（決めた時間まで）
         id: details
         run: python scripts/update_details.py --minutes ${{ inputs.detail_minutes || '300' }}
