@@ -25,8 +25,10 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
-    if r.get("gx"):
-        g["gx"] = r["gx"]  # ゲームパスの終了予定日
+    # ゲームパスの終了予定日（60日以内のものだけ。9998年などの仮の日付や遠い契約期限は除く）
+    gx = {k: v for k, v in (r.get("gx") or {}).items() if T <= v <= today(60)}
+    if gx:
+        g["gx"] = gx
     if r.get("rc"):
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if gid in force_rel:
