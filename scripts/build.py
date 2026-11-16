@@ -37,6 +37,28 @@ for gid, r in cat.items():
     if text:
         desc.setdefault(gid[-1], {})[gid] = text[:LIM] + ("…" if len(text) > LIM else "")
 
+# 発売日の記載がない作品のうち、同じ発行元の発売済み作品の別エディション・別版は発売済みとみなす
+import re
+EDITION = re.compile(r"^\s*([-–—:：(（/]|edition|版|エディション|deluxe|gold|ultimate|complete|standard|premium|definitive|bundle|collection|デラックス|ゴールド|アルティメット|コンプリート|スタンダード|プレミアム|バンドル)", re.I)
+nt = lambda x: re.sub(r"[®™©]", "", x).replace("’", "'").replace("‘", "'").lower().strip()
+by_pub = {}
+for g in games:
+    if g["d"] and g["d"] <= T:
+        by_pub.setdefault(g["pub"].lower(), []).append(nt(g["t"]))
+for v in by_pub.values():
+    v.sort(key=len, reverse=True)
+sib = 0
+for g in games:
+    if g["d"]:
+        continue
+    t = nt(g["t"])
+    for base in by_pub.get(g["pub"].lower(), []):
+        if len(base) >= 4 and t != base and t.startswith(base) and EDITION.match(t[len(base):]):
+            g["rs"] = 1
+            sib += 1
+            break
+print("dateless editions of released games:", sib)
+
 # 最初に読み込む分（直近2週間・発売予定）と、後から読み込む分に分ける
 recent = today(-14)
 first = [g for g in games if not g["d"] or g["d"] >= recent]
