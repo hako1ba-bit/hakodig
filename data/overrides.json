@@ -1,0 +1,16 @@
+{
+ "_説明": "ストアの情報だけでは判定できない作品の手動指定。released=発売済みとして扱う、hidden=表示しない",
+ "released": [
+  "9NLMFLMDT0T5",
+  "9NDTCPJDJQ9Q",
+  "9P2Z4LP10ZMC",
+  "9P42Q9HM71XQ",
+  "9PN0MPNNP92J",
+  "9PNKKPKNSWL6",
+  "9MZP241SM6DH",
+  "9N1J80NLF92T"
+ ],
+ "hidden": [
+  "9MT8CPH77Z8H"
+ ]
+}

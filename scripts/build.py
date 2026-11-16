@@ -10,11 +10,15 @@ cat = load_jsonl("catalog.jsonl")
 det = load_jsonl("details.jsonl")
 low = load_jsonl("low.jsonl")
 aliases = load_json("aliases.json", {})
+overrides = load_json("overrides.json", {})
+force_rel, force_hide = set(overrides.get("released", [])), set(overrides.get("hidden", []))
 meta = load_json("meta.json", {})
 T = today()
 
 games, desc = [], {}
 for gid, r in cat.items():
+    if gid in force_hide:
+        continue
     dt = det.get(gid, {})
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
@@ -23,6 +27,8 @@ for gid, r in cat.items():
         g["e"] = r["e"]
     if r.get("rc"):
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
+    if gid in force_rel:
+        g["rs"] = 1  # 手動で発売済みに指定
     if r.get("big"):
         g["big"] = 1  # インストールサイズが1GB以上（中身が配信されている目印）
     if r.get("xpa") or dt.get("pa"):
