@@ -76,6 +76,23 @@ for sid, name in PASS.items():
             fresh[i]["gp"] = sorted(fresh[i]["gp"] + [name], key=ORDER.index)
     print(f"sub {name}: {len(ids)}", flush=True)
 
+# 2b. ゲームパスの「まもなく終了」（ストアの作品データより先に、ゲームパス専用の一覧に載る。終了日は載っていない）
+LEAVING = {"393f05bf-e596-4ef6-9487-6d4fa0eab987": ["Premium", "Ultimate"],  # 本体
+           "cc7fc951-d00f-410e-9e02-5e4628e04163": ["PC Game Pass"]}          # PC
+for sid, tiers in LEAVING.items():
+    try:
+        lst = json.loads(http(f"https://catalog.gamepass.com/sigls/v2?id={sid}&language=ja-jp&market=JP"))
+        ids = [x["id"] for x in lst if "id" in x]
+    except Exception as e:
+        print("leaving list failed:", sid, e, flush=True)
+        continue
+    for i in ids:
+        if i in fresh:
+            lv = set(fresh[i].get("lv", [])) | {t for t in tiers if t in fresh[i]["gp"]}
+            if lv:
+                fresh[i]["lv"] = sorted(lv, key=ORDER.index)
+    print("leaving soon:", len(ids), flush=True)
+
 # 3. Play Anywhere 対応
 xpa = browse_ids({"PlayWith": {"id": "PlayWith", "choices": [{"id": "XboxPlayAnywhere"}]}}, "hakosearchXPA")
 for i in xpa:

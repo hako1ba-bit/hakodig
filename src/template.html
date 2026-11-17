@@ -613,7 +613,7 @@ function card(g){
   const img = src ? `<img class="thumb" src="${src}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(g.t.slice(0,1))}</span>`;
   const tags = [
     CMN[g.id] ? `<span class="tag cmt" title="ひと言コメント ${CMN[g.id]}件">💬 コメント${CMN[g.id]}</span>` : "",
-    ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}</span>` : ""}</span>`),
+    ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">${g.gx[x] === "soon" ? "まもなく終了" : `〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}`}</span>` : ""}</span>`),
     ...Object.entries(g.gn || {}).map(([x, d]) => `<span class="tag gp soon">${esc(x)}<span class="gn">${+d.slice(5,7)}/${+d.slice(8,10)}〜</span></span>`),
     g.pa ? `<span class="tag${SEL.pa ? " sel" : ""}">Play Anywhere</span>` : "",
     ...g.pl.filter(x => PL[x]).map(x => `<span class="tag${SEL.pl.has(x) ? " sel" : ""}">${PL[x]}</span>`)
@@ -1096,7 +1096,7 @@ function diffs(o, n){
   if (n.p > 0 && isFinite(low) && n.p < low) out.push(`記録上の最安値を更新（${yen(n.p)}）`);
   n.gp.filter(x => !o.gp.includes(x)).forEach(x => out.push(`${x} に追加されました`));
   o.gp.filter(x => !n.gp.includes(x)).forEach(x => out.push(`${x} から外れました`));
-  Object.entries(n.gx).filter(([x, d]) => !o.gx[x]).forEach(([x, d]) => out.push(`${x} から ${md(d)} に外れる予定です`));
+  Object.entries(n.gx).filter(([x, d]) => !o.gx[x] || (o.gx[x] === "soon" && d !== "soon")).forEach(([x, d]) => out.push(d === "soon" ? `${x} からまもなく外れます` : `${x} から ${md(d)} に外れる予定です`));
   if (n.ja){
     const got = JA.filter((l, i) => n.ja[i] && !(o.ja && o.ja[i]));
     if (got.length) out.push(`日本語${got.join("・")}に対応しました`);

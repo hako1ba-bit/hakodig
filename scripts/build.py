@@ -96,6 +96,8 @@ for gid, r in cat.items():
         g["k"] = k  # 英語タイトルのカタカナ読み（「ギアーズ」「ヘイロー」などで探せるように）
     # ゲームパスの終了予定日（60日以内のものだけ。9998年などの仮の日付や遠い契約期限は除く）
     gx = {k: v for k, v in (r.get("gx") or {}).items() if T <= v <= today(60)}
+    for k in r.get("lv") or []:  # ゲームパスの「まもなく終了」一覧に載っている（終了日は未発表）
+        gx.setdefault(k, "soon")
     if gx:
         g["gx"] = gx
     gn = {k: v for k, v in (r.get("gn") or {}).items() if T < v <= today(60)}
