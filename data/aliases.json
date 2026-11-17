@@ -20,7 +20,8 @@
  ],
  "ストリートファイター": [
   "street fighter",
-  "スト"
+  "スト",
+  "sf"
  ],
  "ファイナルファンタジー": [
   "ff",
@@ -250,5 +251,856 @@
  ],
  "Microsoft Solitaire": [
   "ソリティア"
+ ],
+ "Gears 5": [
+  "ギアーズ5",
+  "ギアーズ"
+ ],
+ "Candy Crush": [
+  "キャンディークラッシュ",
+  "キャンディクラッシュ"
+ ],
+ "Mahjong": [
+  "麻雀",
+  "マージャン"
+ ],
+ "Minesweeper": [
+  "マインスイーパー",
+  "マインスイーパ"
+ ],
+ "Jigsaw": [
+  "ジグソー"
+ ],
+ "eFootball": [
+  "イーフットボール",
+  "ウイイレ"
+ ],
+ "Cities: Skylines": [
+  "シティーズスカイライン",
+  "シティーズ"
+ ],
+ "War Thunder": [
+  "ウォーサンダー"
+ ],
+ "Wo Long": [
+  "ウォーロン"
+ ],
+ "Atomic Heart": [
+  "アトミックハート"
+ ],
+ "ASTRONEER": [
+  "アストロニーア"
+ ],
+ "Dead Rising": [
+  "デッドライジング"
+ ],
+ "A Plague Tale": [
+  "プレイグテイル",
+  "プレイグ テイル"
+ ],
+ "Clair Obscur": [
+  "クレールオブスキュール",
+  "エクスペディション33",
+  "expedition 33"
+ ],
+ "Lies of P": [
+  "ライズオブピー",
+  "ライズ オブ P"
+ ],
+ "SCARLET NEXUS": [
+  "スカーレットネクサス"
+ ],
+ "Roblox": [
+  "ロブロックス"
+ ],
+ "Tomb Raider": [
+  "トゥームレイダー"
+ ],
+ "Dying Light": [
+  "ダイイングライト"
+ ],
+ "The Medium": [
+  "ミディアム"
+ ],
+ "Dead by Daylight": [
+  "デッドバイデイライト",
+  "dbd"
+ ],
+ "Warhammer": [
+  "ウォーハンマー"
+ ],
+ "Aliens": [
+  "エイリアンズ"
+ ],
+ "Alien": [
+  "エイリアン"
+ ],
+ "Goat Simulator": [
+  "ゴートシミュレーター",
+  "ヤギ"
+ ],
+ "S.T.A.L.K.E.R.": [
+  "ストーカー",
+  "stalker"
+ ],
+ "Lords of the Fallen": [
+  "ロードオブザフォールン",
+  "ローズオブザフォールン"
+ ],
+ "PowerWash Simulator": [
+  "パワーウォッシュシミュレーター"
+ ],
+ "DEAD OR ALIVE": [
+  "デッドオアアライブ",
+  "doa"
+ ],
+ "World of Warships": [
+  "ワールドオブウォーシップス",
+  "ワーシップ"
+ ],
+ "World of Tanks": [
+  "ワールドオブタンクス",
+  "wot"
+ ],
+ "Atomfall": [
+  "アトムフォール"
+ ],
+ "Dead Cells": [
+  "デッドセルズ"
+ ],
+ "RoboCop": [
+  "ロボコップ"
+ ],
+ "Dragon's Dogma": [
+  "ドラゴンズドグマ"
+ ],
+ "Among Us": [
+  "アモングアス",
+  "アモアス"
+ ],
+ "NINJA GAIDEN": [
+  "ニンジャガイデン",
+  "忍者外伝"
+ ],
+ "NieR": [
+  "ニーア"
+ ],
+ "SnowRunner": [
+  "スノーランナー"
+ ],
+ "Warframe": [
+  "ウォーフレーム"
+ ],
+ "Sniper Elite": [
+  "スナイパーエリート"
+ ],
+ "MechWarrior": [
+  "メックウォーリア"
+ ],
+ "PAYDAY": [
+  "ペイデイ"
+ ],
+ "Cult of the Lamb": [
+  "カルトオブザラム"
+ ],
+ "Bloodstained": [
+  "ブラッドステインド"
+ ],
+ "Kingdom Come": [
+  "キングダムカム"
+ ],
+ "Chained Echoes": [
+  "チェインドエコーズ"
+ ],
+ "Teenage Mutant Ninja Turtles": [
+  "タートルズ",
+  "ミュータントタートルズ",
+  "tmnt"
+ ],
+ "The Alters": [
+  "オルターズ"
+ ],
+ "OCTOPATH TRAVELER": [
+  "オクトパストラベラー",
+  "オクトラ"
+ ],
+ "PUBG": [
+  "パブジー",
+  "バトルグラウンド"
+ ],
+ "Exoprimal": [
+  "エグゾプライマル"
+ ],
+ "Tropico": [
+  "トロピコ"
+ ],
+ "Zoo Tycoon": [
+  "ズータイクーン"
+ ],
+ "Moonlighter": [
+  "ムーンライター"
+ ],
+ "Flintlock": [
+  "フリントロック"
+ ],
+ "Saints Row": [
+  "セインツロウ"
+ ],
+ "OUTRIDERS": [
+  "アウトライダーズ"
+ ],
+ "Shantae": [
+  "シャンティ"
+ ],
+ "Mount & Blade": [
+  "マウントアンドブレード"
+ ],
+ "Sea of Stars": [
+  "シーオブスターズ"
+ ],
+ "DEATHLOOP": [
+  "デスループ"
+ ],
+ "Life is Strange": [
+  "ライフイズストレンジ"
+ ],
+ "HITMAN": [
+  "ヒットマン"
+ ],
+ "Metro": [
+  "メトロ"
+ ],
+ "Test Drive": [
+  "テストドライブ"
+ ],
+ "Hades": [
+  "ハデス"
+ ],
+ "No Man's Sky": [
+  "ノーマンズスカイ"
+ ],
+ "Just Cause": [
+  "ジャストコーズ"
+ ],
+ "Planet of Lana": [
+  "プラネットオブラナ"
+ ],
+ "Mad Max": [
+  "マッドマックス"
+ ],
+ "Marvel's": [
+  "マーベル"
+ ],
+ "Guardians of the Galaxy": [
+  "ガーディアンズオブギャラクシー"
+ ],
+ "Alan Wake": [
+  "アランウェイク"
+ ],
+ "SEKIRO": [
+  "隻狼",
+  "セキロ"
+ ],
+ "Phantom Dust": [
+  "ファントムダスト"
+ ],
+ "Unravel": [
+  "アンラベル"
+ ],
+ "Crusader Kings": [
+  "クルセイダーキングス"
+ ],
+ "LOST JUDGMENT": [
+  "ロストジャッジメント"
+ ],
+ "JUDGE EYES": [
+  "ジャッジアイズ"
+ ],
+ "Maneater": [
+  "マンイーター"
+ ],
+ "DiRT": [
+  "ダート"
+ ],
+ "South of Midnight": [
+  "サウスオブミッドナイト"
+ ],
+ "Happy Wars": [
+  "ハッピーウォーズ"
+ ],
+ "LIMBO": [
+  "リンボ"
+ ],
+ "TUNIC": [
+  "チュニック"
+ ],
+ "Cocoon": [
+  "コクーン"
+ ],
+ "ARC Raiders": [
+  "アークレイダーズ"
+ ],
+ "Outer Wilds": [
+  "アウターワイルズ"
+ ],
+ "Cuphead": [
+  "カップヘッド"
+ ],
+ "Balatro": [
+  "バラトロ"
+ ],
+ "Undertale": [
+  "アンダーテール"
+ ],
+ "As Dusk Falls": [
+  "アズダスクフォールズ"
+ ],
+ "THE FINALS": [
+  "ザファイナルズ",
+  "ファイナルズ"
+ ],
+ "ENDER LILIES": [
+  "エンダーリリーズ"
+ ],
+ "Farming Simulator": [
+  "ファーミングシミュレーター"
+ ],
+ "Slime Rancher": [
+  "スライムランチャー"
+ ],
+ "Frostpunk": [
+  "フロストパンク"
+ ],
+ "Trials": [
+  "トライアルズ"
+ ],
+ "SILENT HILL": [
+  "サイレントヒル"
+ ],
+ "Star Wars": [
+  "スターウォーズ"
+ ],
+ "Brotato": [
+  "ブロテイト",
+  "ブロタト"
+ ],
+ "THE KING OF FIGHTERS": [
+  "キングオブファイターズ",
+  "kof"
+ ],
+ "GUILTY GEAR": [
+  "ギルティギア"
+ ],
+ "Death's Door": [
+  "デスドア"
+ ],
+ "7 Days to Die": [
+  "セブンデイズトゥダイ"
+ ],
+ "Dune": [
+  "デューン"
+ ],
+ "Virtua Fighter": [
+  "バーチャファイター",
+  "バーチャ"
+ ],
+ "This War of Mine": [
+  "ディスウォーオブマイン"
+ ],
+ "Valheim": [
+  "ヴァルヘイム",
+  "バルヘイム"
+ ],
+ "Watch Dogs": [
+  "ウォッチドッグス"
+ ],
+ "Conan Exiles": [
+  "コナンエグザイル"
+ ],
+ "Serious Sam": [
+  "シリアスサム"
+ ],
+ "ELDEN RING": [
+  "エルデンリング"
+ ],
+ "DARK SOULS": [
+  "ダークソウル"
+ ],
+ "ARMORED CORE": [
+  "アーマードコア"
+ ],
+ "CODE VEIN": [
+  "コードヴェイン"
+ ],
+ "SOULCALIBUR": [
+  "ソウルキャリバー"
+ ],
+ "TEKKEN": [
+  "鉄拳"
+ ],
+ "Monster Hunter": [
+  "モンハン",
+  "モンスターハンター"
+ ],
+ "Palworld": [
+  "パルワールド"
+ ],
+ "Terraria": [
+  "テラリア"
+ ],
+ "Celeste": [
+  "セレステ"
+ ],
+ "Overcooked": [
+  "オーバークック"
+ ],
+ "Ghostrunner": [
+  "ゴーストランナー"
+ ],
+ "Borderlands": [
+  "ボーダーランズ"
+ ],
+ "BioShock": [
+  "バイオショック"
+ ],
+ "XCOM": [
+  "エックスコム"
+ ],
+ "Civilization": [
+  "シヴィライゼーション",
+  "シビライゼーション",
+  "civ"
+ ],
+ "Two Point": [
+  "ツーポイント"
+ ],
+ "Planet Coaster": [
+  "プラネットコースター"
+ ],
+ "Planet Zoo": [
+  "プラネットズー"
+ ],
+ "Jurassic World": [
+  "ジュラシックワールド"
+ ],
+ "LEGO": [
+  "レゴ"
+ ],
+ "Sonic": [
+  "ソニック"
+ ],
+ "PAC-MAN": [
+  "パックマン"
+ ],
+ "Tetris": [
+  "テトリス"
+ ],
+ "Rocket League": [
+  "ロケットリーグ"
+ ],
+ "Fall Guys": [
+  "フォールガイズ"
+ ],
+ "Dragon Ball": [
+  "ドラゴンボール"
+ ],
+ "NARUTO": [
+  "ナルト",
+  "naruto"
+ ],
+ "ONE PIECE": [
+  "ワンピース"
+ ],
+ "Sword Art Online": [
+  "ソードアートオンライン",
+  "sao"
+ ],
+ "Tales of": [
+  "テイルズオブ",
+  "テイルズ"
+ ],
+ "Prince of Persia": [
+  "プリンスオブペルシャ"
+ ],
+ "Ghost Recon": [
+  "ゴーストリコン"
+ ],
+ "The Division": [
+  "ディビジョン"
+ ],
+ "For Honor": [
+  "フォーオナー"
+ ],
+ "Titanfall": [
+  "タイタンフォール"
+ ],
+ "It Takes Two": [
+  "イットテイクスツー"
+ ],
+ "Split Fiction": [
+  "スプリットフィクション"
+ ],
+ "Hogwarts Legacy": [
+  "ホグワーツレガシー"
+ ],
+ "Doom": [
+  "ドゥーム"
+ ],
+ "Quake": [
+  "クエイク"
+ ],
+ "Wasteland": [
+  "ウェイストランド"
+ ],
+ "Pillars of Eternity": [
+  "ピラーズオブエタニティ"
+ ],
+ "Psychonauts": [
+  "サイコノーツ"
+ ],
+ "Contraband": [
+  "コントラバンド"
+ ],
+ "Perfect Dark": [
+  "パーフェクトダーク"
+ ],
+ "Clockwork Revolution": [
+  "クロックワークレボリューション"
+ ],
+ "Towerborne": [
+  "タワーボーン"
+ ],
+ "Ara: History Untold": [
+  "アラ"
+ ],
+ "Hi-Fi RUSH": [
+  "ハイファイラッシュ"
+ ],
+ "Pentiment": [
+  "ペンティメント"
+ ],
+ "Ori and": [
+  "オリ"
+ ],
+ "Banjo": [
+  "バンジョー"
+ ],
+ "Rare Replay": [
+  "レアリプレイ"
+ ],
+ "Banishers": [
+  "バニッシャーズ"
+ ],
+ "Stray": [
+  "ストレイ"
+ ],
+ "Ghostwire": [
+  "ゴーストワイヤー"
+ ],
+ "Persona": [
+  "ペルソナ"
+ ],
+ "Metaphor": [
+  "メタファー"
+ ],
+ "Like a Dragon": [
+  "龍が如く"
+ ],
+ "Sackboy": [
+  "サックボーイ"
+ ],
+ "Spider-Man": [
+  "スパイダーマン"
+ ],
+ "Batman": [
+  "バットマン"
+ ],
+ "Mortal Kombat": [
+  "モータルコンバット"
+ ],
+ "Injustice": [
+  "インジャスティス"
+ ],
+ "Street Fighter": [
+  "ストリートファイター",
+  "スト6"
+ ],
+ "Hitman": [
+  "ヒットマン"
+ ],
+ "Euro Truck Simulator": [
+  "ユーロトラック"
+ ],
+ "American Truck Simulator": [
+  "アメリカントラック"
+ ],
+ "タイタンフォール": [
+  "titanfall"
+ ],
+ "ディビジョン": [
+  "division"
+ ],
+ "ダークソウル": [
+  "dark souls"
+ ],
+ "サイコブレイク": [
+  "evil within",
+  "the evil within"
+ ],
+ "ドラゴンエイジ": [
+  "dragon age"
+ ],
+ "ソウルハッカーズ": [
+  "soul hackers"
+ ],
+ "メトロ": [
+  "metro"
+ ],
+ "ペグル": [
+  "peggle"
+ ],
+ "アサシン クリード": [
+  "assassin's creed",
+  "assassins creed",
+  "ac"
+ ],
+ "ロストオデッセイ": [
+  "lost odyssey"
+ ],
+ "ドラゴンズドグマ": [
+  "dragon's dogma",
+  "dragons dogma"
+ ],
+ "ソードアート・オンライン": [
+  "sword art online",
+  "sao"
+ ],
+ "ニード・フォー・スピード": [
+  "need for speed",
+  "nfs"
+ ],
+ "ジョジョの奇妙な冒険": [
+  "jojo",
+  "ジョジョ"
+ ],
+ "三國志": [
+  "sangokushi",
+  "romance of the three kingdoms",
+  "三国志"
+ ],
+ "ドラゴンボール": [
+  "dragon ball",
+  "dragonball"
+ ],
+ "ウォッチドッグス": [
+  "watch dogs"
+ ],
+ "フォーオナー": [
+  "for honor"
+ ],
+ "レゴ": [
+  "lego"
+ ],
+ "バトルトード": [
+  "battletoads"
+ ],
+ "塊魂": [
+  "katamari",
+  "かたまり魂"
+ ],
+ "パックマン": [
+  "pac-man",
+  "pacman"
+ ],
+ "ベア・ナックル": [
+  "streets of rage",
+  "bare knuckle"
+ ],
+ "プラネットコースター": [
+  "planet coaster"
+ ],
+ "ルーンファクトリー": [
+  "rune factory"
+ ],
+ "ハングリーシャーク": [
+  "hungry shark"
+ ],
+ "真サムライスピリッツ": [
+  "samurai shodown",
+  "samurai spirits",
+  "サムスピ"
+ ],
+ "サムライスピリッツ": [
+  "samurai shodown",
+  "サムスピ"
+ ],
+ "パウ・パトロール": [
+  "paw patrol"
+ ],
+ "ザ・ハウス・オブ・ザ・デッド": [
+  "house of the dead"
+ ],
+ "鬼滅の刃": [
+  "demon slayer",
+  "kimetsu",
+  "きめつ"
+ ],
+ "くにおくん": [
+  "kunio",
+  "river city"
+ ],
+ "風のクロノア": [
+  "klonoa",
+  "クロノア"
+ ],
+ "僕のヒーローアカデミア": [
+  "my hero academia",
+  "ヒロアカ"
+ ],
+ "L.A.ノワール": [
+  "la noire",
+  "l.a. noire"
+ ],
+ "ディズニー": [
+  "disney"
+ ],
+ "電脳戦機バーチャロン": [
+  "virtual on",
+  "バーチャロン"
+ ],
+ "ぷよぷよ": [
+  "puyo puyo",
+  "puyo"
+ ],
+ "牧場物語": [
+  "story of seasons",
+  "harvest moon",
+  "bokumono"
+ ],
+ "SDガンダム": [
+  "gundam",
+  "ガンダム"
+ ],
+ "ガンダム": [
+  "gundam"
+ ],
+ "転生したらスライムだった件": [
+  "tensura",
+  "転スラ",
+  "slime"
+ ],
+ "ニーア": [
+  "nier"
+ ],
+ "ソウルキャリバー": [
+  "soulcalibur",
+  "soul calibur"
+ ],
+ "真・女神転生": [
+  "shin megami tensei",
+  "smt",
+  "メガテン"
+ ],
+ "信長の野望": [
+  "nobunaga's ambition",
+  "nobunaga"
+ ],
+ "無双": [
+  "warriors",
+  "musou"
+ ],
+ "戦国無双": [
+  "samurai warriors"
+ ],
+ "真・三國無双": [
+  "dynasty warriors"
+ ],
+ "ゼルダ": [
+  "zelda"
+ ],
+ "桃太郎電鉄": [
+  "momotaro",
+  "桃鉄"
+ ],
+ "スーパーロボット大戦": [
+  "super robot wars",
+  "スパロボ"
+ ],
+ "太鼓の達人": [
+  "taiko no tatsujin",
+  "taiko"
+ ],
+ "アトリエ": [
+  "atelier"
+ ],
+ "イースⅩ": [
+  "ys"
+ ],
+ "イース": [
+  "ys"
+ ],
+ "軌跡": [
+  "trails",
+  "kiseki"
+ ],
+ "英雄伝説": [
+  "trails",
+  "legend of heroes"
+ ],
+ "ダンガンロンパ": [
+  "danganronpa"
+ ],
+ "逆転裁判": [
+  "ace attorney",
+  "phoenix wright"
+ ],
+ "大神": [
+  "okami"
+ ],
+ "サイレントヒル": [
+  "silent hill"
+ ],
+ "魂斗羅": [
+  "contra",
+  "コントラ"
+ ],
+ "悪魔城": [
+  "castlevania"
+ ],
+ "天穂のサクナヒメ": [
+  "sakuna",
+  "サクナヒメ"
+ ],
+ "キングダム ハーツ": [
+  "kingdom hearts",
+  "kh"
+ ],
+ "スターオーシャン": [
+  "star ocean"
+ ],
+ "ヴァルキリー": [
+  "valkyrie"
+ ],
+ "オクトパストラベラー": [
+  "octopath traveler"
+ ],
+ "ブレイブリー": [
+  "bravely"
+ ],
+ "ライザのアトリエ": [
+  "ryza"
+ ],
+ "ARK: Survival": [
+  "アーク"
+ ],
+ "RAGE 2": [
+  "レイジ"
+ ],
+ "Ryse: Son of Rome": [
+  "ライズ"
+ ],
+ "INSIDE & LIMBO": [
+  "インサイド",
+  "リンボ"
  ]
 }
