@@ -643,7 +643,7 @@ function card(g){
   const tags = [
     CMN[g.id] ? `<span class="tag cmt" title="ひと言コメント ${CMN[g.id]}件">💬 コメント${CMN[g.id]}</span>` : "",
     g.versions.some(v => v.dl) ? `<span class="tag dlt" title="DLC・追加コンテンツあり">DLC ${Math.max(...g.versions.map(v => v.dl || 0))}</span>` : "",
-    ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">${g.gx[x] === "soon" ? "まもなく終了" : `〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}`}</span>` : ""}</span>`),
+    ...g.gp.filter(x => !(g.gn && g.gn[x])).map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">${g.gx[x] === "soon" ? "まもなく終了" : `〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}`}</span>` : ""}</span>`),
     ...Object.entries(g.gn || {}).map(([x, d]) => `<span class="tag gp soon">${esc(x)}<span class="gn">${+d.slice(5,7)}/${+d.slice(8,10)}〜</span></span>`),
     g.pa ? `<span class="tag${SEL.pa ? " sel" : ""}">Play Anywhere</span>` : "",
     ...g.pl.filter(x => PL[x]).map(x => `<span class="tag${SEL.pl.has(x) ? " sel" : ""}">${PL[x]}</span>`)
