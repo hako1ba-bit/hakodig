@@ -118,6 +118,13 @@ with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as f:
     f.write(page)
 open(os.path.join(OUT, ".nojekyll"), "w").close()
 
+# プライバシーポリシー・利用規約
+head = open(os.path.join(ROOT, "src", "pages", "_head.html"), encoding="utf-8").read()
+for name, title in [("privacy", "プライバシーポリシー"), ("terms", "利用規約")]:
+    body = open(os.path.join(ROOT, "src", "pages", name + ".html"), encoding="utf-8").read()
+    with open(os.path.join(OUT, name + ".html"), "w", encoding="utf-8") as f:
+        f.write(head.replace("__TITLE__", title) + body)
+
 # 安全のためのヘッダー。ページ内のプログラムは、このページに書いたもの（ハッシュで指定）以外は動かさない
 import hashlib, base64
 sh = lambda x: "'sha256-" + base64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'"

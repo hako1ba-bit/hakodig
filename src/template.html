@@ -122,6 +122,7 @@ legend{font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom
 .totop{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;width:48px;height:48px;border-radius:50%;border:1px solid var(--accent);background:var(--panel);color:var(--accent);font-size:20px;line-height:1;cursor:pointer;box-shadow:0 0 12px var(--glow);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s,transform .2s,visibility .2s;-webkit-tap-highlight-color:transparent}
 .totop.show{opacity:.92;visibility:visible;transform:none}
 .totop:hover,.totop:focus-visible{opacity:1;background:var(--accent-soft)}
+.legal{margin:14px 0 0;font-size:13px;text-align:center}.legal a{color:var(--muted)}
 .pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin-top:20px}
 .pager button{font:inherit;font-family:var(--f-mono);font-size:13px;min-width:38px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer}
 .pager button[aria-current="page"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:0 0 12px var(--glow);font-weight:700}
@@ -289,6 +290,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
       <li>このサイトの制作（ページの作成、データを集める仕組み）には AI（Anthropic の Claude）を使用しています。各ゲームの情報は AI が作ったものではなく、公式ストアの掲載内容をそのまま表示しています。</li>
       <li>Xbox、Xbox Game Pass、Xbox Play Anywhere は Microsoft の商標です。ゲームの画像・説明文の権利は各権利者に帰属します。</li>
     </ul>
+    <p class="legal"><a href="privacy.html">プライバシーポリシー</a>　<a href="terms.html">利用規約</a></p>
   </footer>
 </div>
 
