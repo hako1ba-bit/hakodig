@@ -1,13 +1,14 @@
 // ハコディグのログイン・コメント・お気に入り用API。サイト本体（_site）は静的ファイルとしてそのまま配信される。
 //
 // 安全のための決まりごと
-// - Microsoft には openid だけを求める。メールアドレス・名前は受け取らない。
-// - Microsoft から届くサイト専用IDは、秘密の値（SUB_PEPPER）でハッシュ化してから保存する。
+// - ログインは Google。openid だけを求め、メールアドレス・名前・写真は受け取らない。
+// - Google から届くアカウントID（sub）は、秘密の値（SUB_PEPPER）でハッシュ化してから保存する（元のIDは残さない）。
 // - ログイン状態は HttpOnly・Secure・SameSite=Lax のクッキー。ページのプログラムからは読めない。
 // - 書き込み系のAPIは、このサイト自身から来たリクエスト（Origin が一致）だけを受け付ける。
 // - IPアドレスは保存しない。
 
-const MS = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
+const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SESSION_DAYS = 30;
 const NICK_MAX = 20;
 const BODY_MAX = 140;
@@ -55,7 +56,7 @@ const redirect = (to, extra = []) => {
   extra.forEach(c => h.append("set-cookie", c));
   return new Response(null, { status: 302, headers: h });
 };
-const ready = env => !!(env.MS_CLIENT_ID && env.MS_CLIENT_SECRET && env.SUB_PEPPER);
+const ready = env => !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.SUB_PEPPER);
 const GAME_ID = /^[0-9A-Z]{12}$/;
 // 文字数は見た目の1文字ずつ数える。改行は1つまで、制御文字は取り除く
 function clean(s, max, lines = 3) {
@@ -69,11 +70,11 @@ async function login(req, env) {
   if (!ready(env)) return new Response("ログインは準備中です。", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
   const state = rand(), verifier = rand(48), nonce = rand();
   const q = new URLSearchParams({
-    client_id: env.MS_CLIENT_ID, response_type: "code", response_mode: "query",
+    client_id: env.GOOGLE_CLIENT_ID, response_type: "code",
     redirect_uri: env.SITE + "/auth/callback", scope: "openid",
     state, nonce, code_challenge: await sha256(verifier), code_challenge_method: "S256", prompt: "select_account",
   });
-  return redirect(`${MS}/authorize?${q}`, [setCookie("__Host-hd_oauth", `${state}.${verifier}.${nonce}`, 600)]);
+  return redirect(`${AUTH_URL}?${q}`, [setCookie("__Host-hd_oauth", `${state}.${verifier}.${nonce}`, 600)]);
 }
 
 async function callback(req, env, url) {
@@ -85,23 +86,23 @@ async function callback(req, env, url) {
   if (url.searchParams.get("error")) return back("cancel");
   if (!state || !code || url.searchParams.get("state") !== state) return back("error");
 
-  const res = await fetch(`${MS}/token`, {
+  const res = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: env.MS_CLIENT_ID, client_secret: env.MS_CLIENT_SECRET, grant_type: "authorization_code",
-      code, redirect_uri: env.SITE + "/auth/callback", code_verifier: verifier, scope: "openid",
+      client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, grant_type: "authorization_code",
+      code, redirect_uri: env.SITE + "/auth/callback", code_verifier: verifier,
     }),
   });
   if (!res.ok) return back("error");
   const tok = await res.json();
-  // IDトークンは Microsoft から暗号化通信で直接受け取ったものなので、中身の確認だけ行う
+  // IDトークンは Google から暗号化通信で直接受け取ったものなので、中身の確認だけ行う
   let claims;
   try { claims = JSON.parse(atob(tok.id_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); } catch { return back("error"); }
-  if (claims.aud !== env.MS_CLIENT_ID || claims.nonce !== nonce || !claims.sub || claims.exp * 1000 < Date.now()
-      || !/^https:\/\/login\.microsoftonline\.com\/[0-9a-f-]+\/v2\.0$/.test(claims.iss)) return back("error");
+  if (claims.aud !== env.GOOGLE_CLIENT_ID || claims.nonce !== nonce || !claims.sub || claims.exp * 1000 < Date.now()
+      || !["https://accounts.google.com", "accounts.google.com"].includes(claims.iss)) return back("error");
 
-  // 使うのは sub（このサイト専用のID）だけ。それ以外の項目は保存しない
+  // 使うのは sub（アカウントID）だけ。ハッシュ化して保存し、それ以外の項目は保存しない
   const subHash = await hmac(env.SUB_PEPPER, claims.sub);
   let user = await env.DB.prepare("SELECT id, banned FROM users WHERE sub_hash = ?").bind(subHash).first();
   if (!user) {
