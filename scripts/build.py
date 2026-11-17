@@ -1,3 +1,4 @@
+import unicodedata
 import re
 """data/ の内容と src/template.html から、公開用のサイト一式を _site/ に作る。"""
 import shutil
@@ -79,8 +80,9 @@ GP_MANUAL = load_json("gp_manual.json", {})
 for v in dlc.values():
     inc = set(v.get("inc") or [])
     # 同梱のシーズンパスなどに含まれるキャラ等も除く（DLC名に「"春麗"」「「ケン」」のように名前が入っているもの）
-    names = [n for i in inc for n in (v.get("sub") or {}).get(i, [])]
-    quoted = lambda t: any(q[0] + n + q[1] in t for n in names for q in ('""', "「」", "“”"))
+    nf = lambda x: unicodedata.normalize("NFKC", x).lower().replace(" ", "")
+    names = [nf(n) for i in inc for n in (v.get("sub") or {}).get(i, [])]
+    quoted = lambda t: any(q[0] + n + q[1] in nf(t) for n in names for q in ('""', "「」", "“”"))
     v["items"] = [x for x in v["items"] if x[0] not in inc and not quoted(x[1])]
 
 games, desc = [], {}
