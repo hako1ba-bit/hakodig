@@ -732,7 +732,9 @@ function render(){
   const byRel = qn && sort === "date";
   if (byRel){
     const score = new Map(pool.map(g => [g, relevance(g, qn)]));
-    pool.sort((a,b) => score.get(a) - score.get(b) || byDate(a,b));
+    // 同じくらい一致するときは、体験版を後ろに、エディション違いより本編（同じ名前で始まる短い方）を先に
+    pool.sort((a,b) => score.get(a) - score.get(b) || (a.dm ? 1 : 0) - (b.dm ? 1 : 0)
+      || (b.t.startsWith(a.t) ? -1 : a.t.startsWith(b.t) ? 1 : 0) || byDate(a,b));
   }
   const rows = pool.filter(pass);
   $("#tab-all").hidden = v !== "all";
