@@ -162,9 +162,19 @@ async function api(req, env, url) {
   }
   if (p === "/api/comment-counts" && m === "GET") {
     const { results } = await env.DB.prepare(
-      "SELECT c.game_id AS g, COUNT(*) AS n FROM comments c JOIN users u ON u.id = c.user_id WHERE c.hidden = 0 AND u.banned = 0 GROUP BY c.game_id"
+      "SELECT c.game_id AS g, COUNT(*) AS n, MAX(c.updated_at) AS t FROM comments c JOIN users u ON u.id = c.user_id WHERE c.hidden = 0 AND u.banned = 0 GROUP BY c.game_id"
     ).all();
-    return json(Object.fromEntries(results.map(r => [r.g, r.n])), 200, { "cache-control": "public, max-age=120" });
+    // n: 作品ごとのコメント数、t: 作品ごとの最新コメントの日時
+    return json({ n: Object.fromEntries(results.map(r => [r.g, r.n])), t: Object.fromEntries(results.map(r => [r.g, r.t])) }, 200, { "cache-control": "public, max-age=60" });
+  }
+  // 新着コメント（全作品）
+  if (p === "/api/comments/latest" && m === "GET") {
+    const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit")) || 5));
+    const { results } = await env.DB.prepare(
+      "SELECT c.id, c.game_id AS g, c.body, c.updated_at AS at, u.nick, u.admin AS staff FROM comments c JOIN users u ON u.id = c.user_id " +
+      "WHERE c.hidden = 0 AND u.banned = 0 ORDER BY c.updated_at DESC LIMIT ?"
+    ).bind(limit).all();
+    return json({ comments: results.map(r => ({ ...r, staff: !!r.staff })) }, 200, { "cache-control": "public, max-age=30" });
   }
 
   const me = await currentUser(req, env);
