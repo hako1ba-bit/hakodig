@@ -1,22 +1,253 @@
 {
- "バイオハザード": ["bio", "biohazard", "resident evil", "re"],
- "龍が如く": ["yakuza", "ryu ga gotoku", "like a dragon"],
- "ロックマン": ["rockman", "mega man", "megaman"],
- "悪魔城ドラキュラ": ["castlevania"],
- "ストリートファイター": ["street fighter", "スト"],
- "ファイナルファンタジー": ["ff", "final fantasy"],
- "ドラゴンクエスト": ["dq", "dragon quest", "ドラクエ"],
- "ペルソナ": ["persona"],
- "アーマード・コア": ["armored core", "ac"],
- "エースコンバット": ["ace combat"],
- "デビル メイ クライ": ["devil may cry", "dmc"],
- "モンスターハンター": ["monster hunter", "モンハン", "mh"],
- "グランド・セフト・オート": ["gta", "grand theft auto"],
- "コール オブ デューティ": ["cod", "call of duty"],
- "テイルズ オブ": ["tales of"],
- "メタルギア": ["metal gear", "mgs"],
- "鉄拳": ["tekken"],
- "ソニック": ["sonic"],
- "マインクラフト": ["minecraft", "マイクラ"],
- "フォートナイト": ["fortnite"]
+ "バイオハザード": [
+  "bio",
+  "biohazard",
+  "resident evil",
+  "re"
+ ],
+ "龍が如く": [
+  "yakuza",
+  "ryu ga gotoku",
+  "like a dragon"
+ ],
+ "ロックマン": [
+  "rockman",
+  "mega man",
+  "megaman"
+ ],
+ "悪魔城ドラキュラ": [
+  "castlevania"
+ ],
+ "ストリートファイター": [
+  "street fighter",
+  "スト"
+ ],
+ "ファイナルファンタジー": [
+  "ff",
+  "final fantasy"
+ ],
+ "ドラゴンクエスト": [
+  "dq",
+  "dragon quest",
+  "ドラクエ"
+ ],
+ "ペルソナ": [
+  "persona"
+ ],
+ "アーマード・コア": [
+  "armored core",
+  "ac"
+ ],
+ "エースコンバット": [
+  "ace combat"
+ ],
+ "デビル メイ クライ": [
+  "devil may cry",
+  "dmc"
+ ],
+ "モンスターハンター": [
+  "monster hunter",
+  "モンハン",
+  "mh"
+ ],
+ "グランド・セフト・オート": [
+  "gta",
+  "grand theft auto"
+ ],
+ "コール オブ デューティ": [
+  "cod",
+  "call of duty"
+ ],
+ "テイルズ オブ": [
+  "tales of"
+ ],
+ "メタルギア": [
+  "metal gear",
+  "mgs"
+ ],
+ "鉄拳": [
+  "tekken"
+ ],
+ "ソニック": [
+  "sonic"
+ ],
+ "マインクラフト": [
+  "minecraft",
+  "マイクラ"
+ ],
+ "フォートナイト": [
+  "fortnite"
+ ],
+ "Gears of War": [
+  "ギアーズ",
+  "ギアーズオブウォー",
+  "ギアーズ・オブ・ウォー",
+  "gow"
+ ],
+ "Halo": [
+  "ヘイロー",
+  "ヘイロ"
+ ],
+ "Forza": [
+  "フォルツァ",
+  "フォルザ",
+  "forza horizon",
+  "フォルツァホライゾン"
+ ],
+ "Fable": [
+  "フェイブル"
+ ],
+ "Starfield": [
+  "スターフィールド"
+ ],
+ "Minecraft": [
+  "マインクラフト",
+  "マイクラ"
+ ],
+ "Call of Duty": [
+  "コールオブデューティ",
+  "コール オブ デューティ",
+  "cod"
+ ],
+ "Sea of Thieves": [
+  "シーオブシーブズ",
+  "シー オブ シーブズ"
+ ],
+ "Flight Simulator": [
+  "フライトシミュレーター",
+  "フライトシム",
+  "msfs"
+ ],
+ "Age of Empires": [
+  "エイジオブエンパイア",
+  "エイジ オブ エンパイア",
+  "aoe"
+ ],
+ "Age of Mythology": [
+  "エイジオブミソロジー"
+ ],
+ "Diablo": [
+  "ディアブロ"
+ ],
+ "Fallout": [
+  "フォールアウト"
+ ],
+ "The Elder Scrolls": [
+  "エルダースクロールズ",
+  "スカイリム",
+  "skyrim",
+  "オブリビオン",
+  "oblivion"
+ ],
+ "DOOM": [
+  "ドゥーム"
+ ],
+ "Indiana Jones": [
+  "インディ・ジョーンズ",
+  "インディジョーンズ"
+ ],
+ "Avowed": [
+  "アヴァウド"
+ ],
+ "Hellblade": [
+  "ヘルブレイド"
+ ],
+ "Grounded": [
+  "グラウンデッド"
+ ],
+ "Battlefield": [
+  "バトルフィールド",
+  "bf"
+ ],
+ "Assassin's Creed": [
+  "アサシンクリード",
+  "アサクリ"
+ ],
+ "Cyberpunk": [
+  "サイバーパンク"
+ ],
+ "Microsoft Flight": [
+  "フライトシミュレーター"
+ ],
+ "State of Decay": [
+  "ステートオブディケイ",
+  "ステート・オブ・ディケイ"
+ ],
+ "Ori and the": [
+  "オリ",
+  "オリとくらやみの森"
+ ],
+ "Hollow Knight": [
+  "ホロウナイト"
+ ],
+ "Stardew Valley": [
+  "スターデューバレー",
+  "スターデュー"
+ ],
+ "Grand Theft Auto": [
+  "グランドセフトオート",
+  "gta"
+ ],
+ "Red Dead Redemption": [
+  "レッドデッドリデンプション",
+  "rdr"
+ ],
+ "The Witcher": [
+  "ウィッチャー"
+ ],
+ "Baldur's Gate": [
+  "バルダーズゲート"
+ ],
+ "Destiny": [
+  "デスティニー"
+ ],
+ "Overwatch": [
+  "オーバーウォッチ"
+ ],
+ "Apex Legends": [
+  "エーペックス",
+  "エーペックスレジェンズ",
+  "apex"
+ ],
+ "Fortnite": [
+  "フォートナイト"
+ ],
+ "Rainbow Six": [
+  "レインボーシックス",
+  "r6",
+  "シージ"
+ ],
+ "Far Cry": [
+  "ファークライ"
+ ],
+ "Tom Clancy's": [
+  "トムクランシー"
+ ],
+ "EA SPORTS FC": [
+  "fc",
+  "fifa",
+  "イーエースポーツ"
+ ],
+ "Need for Speed": [
+  "ニードフォースピード",
+  "nfs"
+ ],
+ "Dead Space": [
+  "デッドスペース"
+ ],
+ "Mass Effect": [
+  "マスエフェクト"
+ ],
+ "The Outer Worlds": [
+  "アウターワールド"
+ ],
+ "Wolfenstein": [
+  "ウルフェンシュタイン"
+ ],
+ "Killer Instinct": [
+  "キラーインスティンクト"
+ ],
+ "Microsoft Solitaire": [
+  "ソリティア"
+ ]
 }
