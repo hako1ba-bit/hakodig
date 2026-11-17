@@ -54,6 +54,22 @@ def kana_reading(title):
             out.append(k)
     return " ".join(out) or None
 
+# ---------- 英語タイトルの作品の日本名 ----------
+# data/ja_names.json（手で足したもの）と、ストアの説明文の書き出し「『〇〇』は…」から拾う
+JA_NAMES = {k.lower(): v for k, v in load_json("ja_names.json", {}).items() if not k.startswith("_")}
+JP_CHARS = re.compile(r"[ぁ-んァ-ヶ一-龯]")
+def ja_name(title, desc):
+    if JP_CHARS.search(title):
+        return None
+    names = [n for k, v in JA_NAMES.items() if k in title.lower() for n in v]
+    m = re.match(r"\s*[『「]([^』」]{2,30})[』」]", desc)
+    if m:
+        n = m.group(1).strip()
+        # 文章の一部らしいもの（助詞を含む）や「〜版」は除く
+        if JP_CHARS.search(n) and not re.search(r"[をにがへ]|ている|版$", n):
+            names.append(n)
+    return " ".join(dict.fromkeys(names)) or None
+
 games, desc = [], {}
 for gid, r in cat.items():
     if gid in force_hide:
@@ -64,6 +80,9 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
+    j = ja_name(r["t"], dt.get("desc") or "")
+    if j:
+        g["j"] = j  # 日本での名前（「井戸の烏」など）
     k = kana_reading(r["t"])
     if k:
         g["k"] = k  # 英語タイトルのカタカナ読み（「ギアーズ」「ヘイロー」などで探せるように）

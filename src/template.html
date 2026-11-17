@@ -455,7 +455,7 @@ const norm = s => String(s).normalize("NFKC").toLowerCase().replace(/[®™©]/g
   .replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
 const NT = new WeakMap(), NE = new WeakMap();
 const normT = g => { let v = NT.get(g); if (v === undefined){ v = norm(g.t); NT.set(g, v); } return v; };
-const normE = g => { let v = NE.get(g); if (v === undefined){ v = g.e ? norm(g.e) : ""; NE.set(g, v); } return v; };
+const normE = g => { let v = NE.get(g); if (v === undefined){ v = norm([g.e, g.j].filter(Boolean).join(" ")); NE.set(g, v); } return v; };
 // 別名の対応表: 検索語が別名の頭と一致したら、そのタイトル語を含む作品も探す（例: bio → バイオハザード）
 // 1行が「同じものを指す呼び方」のまとまり。短い略称（re, ff など）は検索語としてだけ使う
 const ALIAS = Object.entries(ALIASES).map(([k, v]) => {
