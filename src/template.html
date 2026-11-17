@@ -306,6 +306,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
         </div>
         <div class="opts">
           <label class="opt"><input type="checkbox" id="f-sale" data-f="sale"><span>セール中のみ</span></label>
+          <label class="opt"><input type="checkbox" id="f-nofree" data-f="noFree"><span>無料を除外</span></label>
         </div>
       </fieldset>
       <fieldset class="sec" data-sec="genre">
@@ -526,6 +527,7 @@ function pass(g){
   if (f.jaSub && !(g.lang && g.lang[2])) return false;
   if (f.pa && !g.pa) return false;
   if (f.sale && !(g.price && g.price.off > 0)) return false;
+  if (f.noFree && g.price && g.price.now === 0) return false;
   if (f.leaving && !leaveDate(g)) return false;
   if (f.coming && !(g.gn && Object.keys(g.gn).length)) return false;
   if (gp.length && !gp.some(x => g.gp.includes(x))) return false;
