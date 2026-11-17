@@ -356,7 +356,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
       <li>このサイトの制作（ページの作成、データを集める仕組み）には AI（Anthropic の Claude）を使用しています。各ゲームの情報は AI が作ったものではなく、公式ストアの掲載内容をそのまま表示しています。</li>
       <li>Xbox、Xbox Game Pass、Xbox Play Anywhere は Microsoft の商標です。ゲームの画像・説明文の権利は各権利者に帰属します。</li>
     </ul>
-    <p class="legal"><a href="privacy.html">プライバシーポリシー</a>　<a href="terms.html">利用規約</a></p>
+    <p class="legal"><a href="privacy.html">プライバシーポリシー</a>　<a href="terms.html">利用規約</a>　<a href="https://forms.gle/phk6GBy9MLrwpzCZ6" target="_blank" rel="noopener">お問い合わせ</a></p>
   </footer>
 </div>
 
@@ -1093,7 +1093,7 @@ function applyPrefs(pr){
 // ログイン状態を読み込む
 (async () => {
   const p = new URLSearchParams(location.search);
-  const msg = {cancel: "ログインを中止しました", error: "ログインできませんでした。もう一度お試しください", banned: "このアカウントは利用停止中です", unavailable: "ログインは準備中です"}[p.get("login")];
+  const msg = {cancel: "ログインを中止しました", error: "ログインできませんでした。もう一度お試しください", banned: "このアカウントは利用停止中です。ご意見はページ下の「お問い合わせ」からお送りください", unavailable: "ログインは準備中です"}[p.get("login")];
   if (p.has("login") || p.has("bye")) history.replaceState(null, "", location.pathname + location.hash);
   if (p.has("bye")) toast("退会しました。ご利用ありがとうございました");
   if (msg) toast(msg);
