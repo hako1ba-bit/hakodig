@@ -82,6 +82,8 @@ for gid, r in cat.items():
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
+    if r.get("ge") and r.get("gp"):
+        g["ge"] = r["ge"]  # ゲームパスなどに入った日
     if gid in sale_start and r.get("pr") and r["pr"][2]:
         g["ss"] = sale_start[gid]  # セールの開始日（ハコディグが見つけた日）
     if r.get("e"):
