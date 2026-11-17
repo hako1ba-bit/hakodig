@@ -1,5 +1,6 @@
 """毎日: ストアの一覧を取り直し、作品の基本情報・価格・サブスク・Play Anywhere を更新する。
 週1回: 北米ストアのタイトル（英語名での検索用）も取り直す。"""
+import os
 import re
 from common import *
 
@@ -160,6 +161,8 @@ for i, r in fresh.items():
 save_jsonl("catalog.jsonl", fresh)
 save_jsonl("low.jsonl", low)
 meta["list_at"] = T
+if os.environ.get("SLOT") in ("morning", "evening"):
+    meta[os.environ["SLOT"] + "_at"] = T  # その回（朝・夕方）の更新が済んだ印
 meta["list_t"] = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")  # 日本時間
 meta["count"] = len(fresh)
 save_json("meta.json", meta)

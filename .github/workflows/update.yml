@@ -3,6 +3,7 @@
 # - 夕方 15:47: 一覧・価格・セール・ゲームパス＋新作の日本語情報だけ（軽い処理。夕方からのセールを当日中に拾う）
 # GitHubの定時実行は飛ばされることがあるので、朝は 5:47・7:17、夕方は 17:17 にも予備で起動する。
 # 予備の回は、その回の更新が済んでいれば何もせず終わる。
+# 定時実行は数時間遅れることもあるので、朝の回か夕方の回かは「実際に動いた時刻」（12時より前なら朝）で決める。
 name: 毎日の更新
 on:
   schedule:
@@ -37,6 +38,7 @@ jobs:
     outputs:
       go: ${{ steps.c.outputs.go }}
       eve: ${{ steps.c.outputs.eve }}
+      slot: ${{ steps.c.outputs.slot }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,15 +47,16 @@ jobs:
         id: c
         run: |
           today=$(TZ=Asia/Tokyo date +%F)
-          done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('list_at',''))")
-          done_t=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('list_t','00:00'))")
-          case "${{ github.event.schedule }}" in "47 6 * * *"|"17 8 * * *") eve=1 ;; *) eve=0 ;; esac
+          hour=$(TZ=Asia/Tokyo date +%-H)
+          # 朝の回か夕方の回かは、実際に動いた時刻（日本時間）で決める（GitHubの定時実行は大きく遅れることがあるため）
+          if [ "$hour" -lt 12 ]; then slot=morning; eve=0; else slot=evening; eve=1; fi
+          # 手動で起動したときは、指定した内容（詳細の取得時間など）をそのまま使う
+          if [ "${{ github.event_name }}" != "schedule" ]; then eve=0; fi
           echo "eve=$eve" >> "$GITHUB_OUTPUT"
+          echo "slot=$slot" >> "$GITHUB_OUTPUT"
+          done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('${slot}_at',''))")
           skip=0
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$done" = "$today" ]; then
-            # 朝の回: 今日の更新が済んでいれば終了。夕方の回: 15時以降の更新が済んでいれば終了
-            if [ "$eve" = "0" ] || [ "$done_t" \> "14:59" ]; then skip=1; fi
-          fi
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$done" = "$today" ]; then skip=1; fi
           if [ "$skip" = "1" ]; then echo "この回の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"; else echo "go=yes" >> "$GITHUB_OUTPUT"; fi
   update:
     needs: check
@@ -70,6 +73,8 @@ jobs:
       - run: pip install -q alkana==0.0.3
       - name: 一覧・価格・サブスク・Play Anywhere を取得
         if: inputs.skip_list != 'yes'
+        env:
+          SLOT: ${{ needs.check.outputs.slot }}
         run: python scripts/update_list.py
       - name: 一覧を保存
         if: inputs.skip_list != 'yes'
