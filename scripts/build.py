@@ -70,6 +70,8 @@ def ja_name(title, desc):
             names.append(n)
     return " ".join(dict.fromkeys(names)) or None
 
+DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
+
 games, desc = [], {}
 for gid, r in cat.items():
     if gid in force_hide:
@@ -80,6 +82,8 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
+    if DEMO.search(r["t"]):
+        g["dm"] = 1  # 体験版
     j = ja_name(r["t"], dt.get("desc") or "")
     if j:
         g["j"] = j  # 日本での名前（「井戸の烏」など）

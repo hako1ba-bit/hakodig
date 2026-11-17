@@ -72,6 +72,32 @@ def browse(filters=None, loc="ja-JP", sort="ReleaseDate desc", tag="hakosearch")
             return
 
 
+SEARCH = "https://emerald.xboxservices.com/xboxcomfd/search/games?locale={loc}"
+
+
+def search(query, loc="ja-JP", tag="hakodigSearch", max_pages=60):
+    """ストアの検索APIを最後までページ送りし、1ページごとに作品リストを返す"""
+    ct, n = "", 0
+    while n < max_pages:
+        n += 1
+        body = json.dumps({"Query": query, "Filters": "", "ReturnFilters": False,
+                           "ChannelKeyToBeUsedInResponse": "S", "EncodedCT": ct}).encode()
+        j = json.loads(http(SEARCH.format(loc=loc), body,
+                            {"content-type": "application/json", "x-ms-api-version": "1.1", "ms-cv": f"{tag}.{n}"}))
+        ch = list((j.get("channels") or {"x": {}}).values())[0]
+        yield j.get("productSummaries") or []
+        ct = ch.get("encodedCT")
+        more = False
+        if ct:
+            try:
+                more = json.loads(base64.b64decode(ct)).get("HasMore", False)
+            except Exception:
+                more = True
+        time.sleep(1)
+        if not more:
+            return
+
+
 def browse_ids(filters, tag):
     ids = set()
     for ps, ch in browse(filters, tag=tag):

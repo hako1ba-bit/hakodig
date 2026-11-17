@@ -1,5 +1,6 @@
 """毎日: ストアの一覧を取り直し、作品の基本情報・価格・サブスク・Play Anywhere を更新する。
 週1回: 北米ストアのタイトル（英語名での検索用）も取り直す。"""
+import re
 from common import *
 
 cat = load_jsonl("catalog.jsonl")
@@ -53,6 +54,19 @@ for ps, ch in browse(tag="hakosearchList"):
     for p in ps:
         fresh[p["productId"]] = compact(p)
 print("list:", len(fresh), "/ store says", ch.get("totalItems"), flush=True)
+
+# 1b. 体験版（一覧には載らないので、ストア検索で集める）
+DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
+nd = 0
+for q in ("体験版", "demo", "デモ", "trial"):
+    try:
+        for ps in search(q, tag="hakodigDemo"):
+            for p in ps:
+                if DEMO.search(p.get("title") or "") and p["productId"] not in fresh:
+                    fresh[p["productId"]] = compact(p); nd += 1
+    except Exception as e:
+        print("demo search failed:", q, e, flush=True)
+print("demos added:", nd, flush=True)
 
 # 2. サブスク（一覧の情報に含まれないものを補う）
 for sid, name in PASS.items():

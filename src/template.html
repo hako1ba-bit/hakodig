@@ -182,6 +182,7 @@ dialog#dlg::backdrop{background:rgba(0,0,0,.6)}
 .nt-t{font-weight:700;margin:0 0 4px!important}
 .nt ul{margin:0 0 6px;padding-left:1.2em;font-size:13px}
 .nt a{font-size:12px;color:var(--accent)}
+@media (max-width:520px){.tab{font-size:13px;padding:8px 5px}.tab .n{margin-left:2px;font-size:10.5px}.tabs{gap:0;justify-content:space-between}}
 .legal{margin:14px 0 0;font-size:13px;text-align:center}.legal a{color:var(--muted)}
 .pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin-top:20px}
 .pager button{font:inherit;font-family:var(--f-mono);font-size:13px;min-width:38px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer}
@@ -237,6 +238,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
     <button class="tab" role="tab" id="tab-released" data-tab="released" aria-selected="true">発売中<span class="n" id="n-released"></span></button>
     <button class="tab" role="tab" id="tab-upcoming" data-tab="upcoming" aria-selected="false">発売予定<span class="n" id="n-upcoming"></span></button>
     <button class="tab" role="tab" id="tab-sale" data-tab="sale" aria-selected="false">セール中<span class="n" id="n-sale"></span></button>
+    <button class="tab" role="tab" id="tab-demo" data-tab="demo" aria-selected="false">体験版<span class="n" id="n-demo"></span></button>
     <button class="tab" role="tab" id="tab-all" data-tab="all" aria-selected="false" hidden>検索結果<span class="n" id="n-all"></span></button>
     <button class="tab" role="tab" id="tab-fav" data-tab="fav" aria-selected="false" hidden>★ お気に入り<span class="n" id="n-fav"></span></button>
     <button class="tab" role="tab" id="tab-hid" data-tab="hid" aria-selected="false" hidden>非表示にした作品<span class="n" id="n-hid"></span></button>
@@ -618,6 +620,8 @@ function inTab(g){
   if (isHidden(g)) return false;
   if (v === "fav") return isFav(g);
   if (v === "all") return true;
+  if (v === "demo") return !!g.dm;
+  if (g.dm) return false;
   if (v === "sale") return onSale(g);
   if (v === "released") return released(g);
   return !released(g);
@@ -651,7 +655,7 @@ function render(){
          pa: !!document.querySelector("#f-pa:checked")};
   const v = viewTab();
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === v)));
-  $("#sort option[value=date]").textContent = v === "sale" ? "終了が近い順" : "発売日順";
+  $("#sort option[value=date]").textContent = v === "sale" ? "終了が近い順" : v === "demo" ? "配信日順" : "発売日順";
   const sort = $("#sort").value;
   const pool = DATA.filter(inTab);
   const endKey = g => { const e = g.price && g.price.end; if (!e) return "9999-99-99"; const [m,d,y] = e.split("/"); return `${y}-${m}-${d}`; };
@@ -685,11 +689,11 @@ function render(){
   let html = loading, last = null;
   for (const g of shown){
     if (sort === "date" && !byRel){
-      const key = v === "sale" ? endKey(g) : (g.d ? g.d.slice(0, v === "released" ? 10 : 7) : "未定");
+      const key = v === "sale" ? endKey(g) : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : "未定");
       if (key !== last){
         const label = v === "sale"
           ? (key.startsWith("9999") ? "終了日の記載なし" : `${+key.slice(5,7)}/${+key.slice(8,10)} までのセール`)
-          : key === "未定" ? "発売日未定" : (v === "released" ? fmtDate(key) : key.replace("-", "年") + "月");
+          : key === "未定" ? "発売日未定" : (v === "released" || v === "demo" ? fmtDate(key) : key.replace("-", "年") + "月");
         html += `<div class="day">${label}</div>`; last = key;
       }
     }
@@ -699,9 +703,10 @@ function render(){
 }
 
 function counts(){
-  $("#n-released").textContent = FULL ? DATA.filter(released).length.toLocaleString("ja-JP") : "…";
-  $("#n-upcoming").textContent = DATA.filter(g => !released(g)).length;
-  $("#n-sale").textContent = FULL ? DATA.filter(onSale).length : "…";
+  $("#n-released").textContent = FULL ? DATA.filter(g => !g.dm && released(g)).length.toLocaleString("ja-JP") : "…";
+  $("#n-upcoming").textContent = DATA.filter(g => !g.dm && !released(g)).length;
+  $("#n-sale").textContent = FULL ? DATA.filter(g => !g.dm && onSale(g)).length : "…";
+  $("#n-demo").textContent = FULL ? DATA.filter(g => g.dm).length : "…";
   $("#n-all").textContent = "";
   $("#n-fav").textContent = DATA.filter(g => !isHidden(g) && isFav(g)).length;
   $("#n-hid").textContent = DATA.filter(isHidden).length;
