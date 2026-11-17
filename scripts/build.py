@@ -74,6 +74,10 @@ DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial
 
 sale_start = load_json("sale_start.json", {})
 dlc = load_json("dlc.json", {})
+# 同梱されているDLC（シーズンパスなど）は、そのエディションの一覧から除く
+for v in dlc.values():
+    inc = set(v.get("inc") or [])
+    v["items"] = [x for x in v["items"] if x[0] not in inc]
 
 games, desc = [], {}
 for gid, r in cat.items():
@@ -184,7 +188,7 @@ for s, m in desc.items():
 
 t = open(os.path.join(ROOT, "src", "template.html"), encoding="utf-8").read()
 t = (t.replace("__DATA__", dump(first)).replace("__ALIASES__", dump(aliases)).replace("__PUBS__", dump(load_json("publishers.json", [])))
-      .replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T))
+      .replace("__UPDATES__", json.dumps(load_json("changelog.json", [])[:10], ensure_ascii=False, separators=(",", ":"))).replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T))
 page = ('<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
         '<meta name="description" content="Xbox日本ストアのゲームを、日本語対応・ゲームパス・価格で探せる非公式の検索サポート。by ハコイチバ">\n'

@@ -166,4 +166,21 @@ if os.environ.get("SLOT") in ("morning", "evening"):
 meta["list_t"] = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")  # 日本時間
 meta["count"] = len(fresh)
 save_json("meta.json", meta)
+
+# 7. 「最新のアップデート」用の記録（今回の更新で増えたもの）
+DEMO_T = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
+GPT = {"Essential", "Premium", "Ultimate", "PC Game Pass"}
+new_ids = [i for i in fresh if i not in cat]
+n_new = sum(1 for i in new_ids if not DEMO_T.search(fresh[i]["t"]))
+n_demo = sum(1 for i in new_ids if DEMO_T.search(fresh[i]["t"]))
+n_sale = sum(1 for i, d in ss.items() if d == T and not on_sale(cat.get(i)))
+n_gp = sum(1 for i, r in fresh.items() if i in cat and (set(r.get("gp", [])) & GPT) - set(cat[i].get("gp", [])))
+parts = [f"新しい作品を{n_new}本追加" if n_new else "", f"体験版を{n_demo}本追加" if n_demo else "",
+         f"セール開始 {n_sale}本" if n_sale else "", f"ゲームパスに{n_gp}本追加" if n_gp else ""]
+parts = [x for x in parts if x]
+if parts:
+    log = load_json("changelog.json", [])
+    log.insert(0, {"at": f'{T} {meta["list_t"]}', "text": "、".join(parts)})
+    save_json("changelog.json", log[:60])
+print("changelog:", parts, flush=True)
 print("saved catalog:", len(fresh), "partial" if partial else "", flush=True)

@@ -45,6 +45,15 @@ def addons(gid):
             return items
     return items
 
+def bundled(gid):
+    """このエディションに同梱されているもの（本編・シーズンパスなど）のID"""
+    body = json.dumps({"Filters": "", "ReturnFilters": False, "ChannelKeyToBeUsedInResponse": "B",
+                       "EncodedCT": "", "ChannelId": "INTHISBUNDLE_" + gid}).encode()
+    j = json.loads(http(BROWSE.format(loc="ja-JP"), body,
+                        {"content-type": "application/json", "x-ms-api-version": "1.1", "ms-cv": "hakodigBundle.1"}))
+    time.sleep(1)
+    return [p["productId"] for p in j.get("productSummaries") or []]
+
 T = today()
 out = dict(old)
 ok = 0
@@ -56,7 +65,11 @@ for gid in targets:
         continue
     ok += 1
     if items:
-        out[gid] = {"at": T, "items": items}
+        try:
+            inc = bundled(gid)
+        except Exception:
+            inc = (old.get(gid) or {}).get("inc", [])
+        out[gid] = {"at": T, "items": items, "inc": inc}
     else:
         out.pop(gid, None)
 # 対象から外れた作品（ストアから消えた等）は消す
