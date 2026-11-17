@@ -1,0 +1,23 @@
+# 最初に登録した利用者（運営者）を管理者にする。利用者が1人だけのときにしか動かない
+name: 管理者の設定
+on:
+  push:
+    branches: [main]
+    paths: [".github/run-admin"]
+permissions:
+  contents: read
+jobs:
+  admin:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: |
+          W="npx -y wrangler@4.151.0"
+          n=$($W d1 execute hakodig --remote --json --command "SELECT COUNT(*) AS n FROM users" | jq '.[0].results[0].n')
+          echo "利用者数: $n"
+          if [ "$n" = "1" ]; then $W d1 execute hakodig --remote --command "UPDATE users SET admin = 1" >/dev/null && echo "管理者に設定しました"; else echo "利用者が1人ではないので何もしません"; fi
