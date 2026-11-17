@@ -13,6 +13,11 @@ const SESSION_DAYS = 30;
 const NICK_MAX = 20;
 const BODY_MAX = 140;
 const enc = new TextEncoder();
+const LIMIT = 500; // お気に入り・非表示の上限（1人あたり）
+// 運営と紛らわしいニックネームは使えない（運営者本人は除く）
+const RESERVED = ["ハコイチバ", "ハコディグ", "hakoichiba", "hakodig", "ナヴェ", "運営", "管理者", "管理人", "公式", "admin", "staff", "スタッフ", "モデレーター"];
+const fold = x => x.normalize("NFKC").toLowerCase().replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)).replace(/[\s\p{P}\p{S}ー]/gu, "");
+const reserved = nick => RESERVED.some(r => fold(nick).includes(fold(r)));
 
 export default {
   async fetch(req, env) {
@@ -119,6 +124,11 @@ async function callback(req, env, url) {
   return redirect("/?login=ok", [clear, setCookie("__Host-hd_sid", token, SESSION_DAYS * 86400)]);
 }
 
+async function full(env, table, uid) {
+  const r = await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE user_id = ?`).bind(uid).first();
+  return r && r.n >= LIMIT;
+}
+
 async function currentUser(req, env) {
   const token = cookies(req)["__Host-hd_sid"];
   if (!token) return null;
@@ -145,10 +155,10 @@ async function api(req, env, url) {
     if (!GAME_ID.test(g)) return json({ error: "作品IDが不正です" }, 400);
     const me = await currentUser(req, env);
     const { results } = await env.DB.prepare(
-      "SELECT c.id, c.body, c.updated_at AS at, u.nick, c.user_id = ? AS mine FROM comments c JOIN users u ON u.id = c.user_id " +
+      "SELECT c.id, c.body, c.updated_at AS at, u.nick, u.admin AS staff, c.user_id = ? AS mine FROM comments c JOIN users u ON u.id = c.user_id " +
       "WHERE c.game_id = ? AND c.hidden = 0 AND u.banned = 0 ORDER BY c.updated_at DESC LIMIT 200"
     ).bind(me ? me.id : "", g).all();
-    return json({ comments: results.map(r => ({ ...r, mine: !!r.mine })) });
+    return json({ comments: results.map(r => ({ ...r, mine: !!r.mine, staff: !!r.staff })) });
   }
   if (p === "/api/comment-counts" && m === "GET") {
     const { results } = await env.DB.prepare(
@@ -158,7 +168,16 @@ async function api(req, env, url) {
   }
 
   const me = await currentUser(req, env);
-  if (p === "/api/me") return json(me ? { nick: me.nick, admin: !!me.admin } : { guest: true, login: ready(env) });
+  if (p === "/api/me") {
+    if (!me) return json({ guest: true, login: ready(env) });
+    const out = { nick: me.nick, admin: !!me.admin };
+    if (me.admin) {
+      // 未対応の通報（表示中のコメント・利用停止していない人）の件数
+      const r = await env.DB.prepare("SELECT COUNT(DISTINCT r.comment_id) AS n FROM reports r JOIN comments c ON c.id = r.comment_id JOIN users u ON u.id = c.user_id WHERE c.hidden = 0 AND u.banned = 0").first();
+      out.reports = r ? r.n : 0;
+    }
+    return json(out);
+  }
   if (!me) return json({ error: "ログインしてください" }, 401);
 
   if (p === "/api/logout" && m === "POST") {
@@ -175,6 +194,7 @@ async function api(req, env, url) {
   if (p === "/api/nick" && m === "POST") {
     const nick = clean(body.nick, NICK_MAX, 1);
     if (!nick) return json({ error: `ニックネームは1〜${NICK_MAX}文字で入力してください` }, 400);
+    if (!me.admin && reserved(nick)) return json({ error: "運営と紛らわしい名前は使えません。別の名前にしてください" }, 400);
     await env.DB.prepare("UPDATE users SET nick = ? WHERE id = ?").bind(nick, me.id).run();
     return json({ ok: true, nick });
   }
@@ -190,6 +210,7 @@ async function api(req, env, url) {
   if (p === "/api/fav" && m === "POST") {
     if (!GAME_ID.test(body.g || "")) return json({ error: "作品IDが不正です" }, 400);
     const snap = typeof body.snap === "string" && body.snap.length <= 300 ? body.snap : null;
+    if (body.on && await full(env, "favs", me.id)) return json({ error: `お気に入りは${LIMIT}件までです` }, 400);
     await (body.on
       ? env.DB.prepare("INSERT OR IGNORE INTO favs (user_id, game_id, created_at, snap) VALUES (?, ?, ?, ?)").bind(me.id, body.g, now(), snap)
       : env.DB.prepare("DELETE FROM favs WHERE user_id = ? AND game_id = ?").bind(me.id, body.g)).run();
@@ -205,6 +226,7 @@ async function api(req, env, url) {
   if (p === "/api/hide" && m === "POST") {
     const k = String(body.k || "");
     if (!(GAME_ID.test(k) || /^s:.{1,80}$/.test(k))) return json({ error: "指定が不正です" }, 400);
+    if (body.on && await full(env, "hides", me.id)) return json({ error: `非表示は${LIMIT}件までです` }, 400);
     await (body.on
       ? env.DB.prepare("INSERT OR IGNORE INTO hides (user_id, k, created_at) VALUES (?, ?, ?)").bind(me.id, k, now())
       : env.DB.prepare("DELETE FROM hides WHERE user_id = ? AND k = ?").bind(me.id, k)).run();
