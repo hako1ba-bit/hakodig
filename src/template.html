@@ -361,6 +361,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
             <option value="priceAsc">価格の安い順</option>
             <option value="priceDesc">価格の高い順</option>
             <option value="discount">割引率の高い順</option>
+            <option value="saleEnd">セール終了が近い順</option>
             <option value="leaving">ゲームパス終了が近い順</option>
             <option value="cmNew">コメントが新しい順</option>
           </select>
@@ -438,6 +439,7 @@ function group(RAW){
       if (!x.e && g.e) x.e = g.e;
       if (!x.lo && g.lo) x.lo = g.lo;
       if (g.gx) x.gx = Object.assign({}, x.gx, g.gx);
+      if (g.ss && (!x.ss || g.ss > x.ss)) x.ss = g.ss;
       if (g.gn) x.gn = Object.assign({}, x.gn, g.gn);
       if (!x.img && g.img) x.img = g.img;
       if (!x.desc && g.desc){ x.desc = g.desc; x.descCut = g.descCut; }
@@ -693,11 +695,14 @@ function render(){
          pa: !!document.querySelector("#f-pa:checked")};
   const v = viewTab();
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === v)));
-  $("#sort option[value=date]").textContent = v === "sale" ? "終了が近い順" : v === "demo" ? "配信日順" : "発売日順";
+  $("#sort option[value=date]").textContent = v === "sale" ? "セール開始が新しい順" : v === "demo" ? "配信日順" : "発売日順";
+  const se = $("#sort option[value=saleEnd]"); se.hidden = se.disabled = v !== "sale";
+  if (v !== "sale" && $("#sort").value === "saleEnd") $("#sort").value = "date";
   const sort = $("#sort").value;
   const pool = DATA.filter(inTab);
   const endKey = g => { const e = g.price && g.price.end; if (!e) return "9999-99-99"; const [m,d,y] = e.split("/"); return `${y}-${m}-${d}`; };
-  const byDate = (a,b) => v === "sale" ? endKey(a).localeCompare(endKey(b)) || (b.price.off - a.price.off)
+  const byEnd = (a,b) => endKey(a).localeCompare(endKey(b)) || (b.price.off - a.price.off);
+  const byDate = (a,b) => v === "sale" ? (b.ss || "").localeCompare(a.ss || "") || (b.price.off - a.price.off)
     : v === "upcoming" ? (a.d||"9999").localeCompare(b.d||"9999")
     : (b.d||"0000").localeCompare(a.d||"0000");
   const pv = (g, none) => g.price ? g.price.now : none;
@@ -705,6 +710,7 @@ function render(){
   else if (sort === "priceDesc") pool.sort((a,b) => pv(b, -1) - pv(a, -1) || byDate(a,b));
   else if (sort === "discount") pool.sort((a,b) => ((b.price && b.price.off) || 0) - ((a.price && a.price.off) || 0) || byDate(a,b));
   else if (sort === "cmNew") pool.sort((a,b) => (CMT[b.id] || "").localeCompare(CMT[a.id] || "") || byDate(a,b));
+  else if (sort === "saleEnd") pool.sort(byEnd);
   else if (sort === "leaving") pool.sort((a,b) => (leaveDate(a) || "9999").localeCompare(leaveDate(b) || "9999") || byDate(a,b));
   else pool.sort(byDate);
   // 検索語があるときは、一致の度合いが高い作品を先に出す（価格順などを選んだときはその順を優先）
@@ -727,11 +733,13 @@ function render(){
   renderPager(pages, rows.length);
   let html = loading, last = null;
   for (const g of shown){
-    if (sort === "date" && !byRel){
-      const key = v === "sale" ? endKey(g) : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : "未定");
+    const saleEnd = v === "sale" && sort === "saleEnd";
+    if ((sort === "date" || saleEnd) && !byRel){
+      const key = saleEnd ? endKey(g) : v === "sale" ? (g.ss || "0000") : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : "未定");
       if (key !== last){
-        const label = v === "sale"
+        const label = saleEnd
           ? (key.startsWith("9999") ? "終了日の記載なし" : `${+key.slice(5,7)}/${+key.slice(8,10)} までのセール`)
+          : v === "sale" ? (key === "0000" ? "それより前から続いているセール" : key === TODAY ? "今日からのセール" : `${+key.slice(5,7)}/${+key.slice(8,10)} からのセール`)
           : key === "未定" ? "発売日未定" : (v === "released" || v === "demo" ? fmtDate(key) : key.replace("-", "年") + "月");
         html += `<div class="day">${label}</div>`; last = key;
       }

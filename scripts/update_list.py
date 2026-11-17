@@ -115,6 +115,21 @@ for i, r in fresh.items():
     elif cat[i].get("new"):
         r["new"] = cat[i]["new"]
 
+# 5b. セールの開始日（ストアには載っていないので、ハコディグが初めてセールを見つけた日を data/sale_start.json に記録する）
+on_sale = lambda r: bool(r and r.get("pr") and (r["pr"][2] or 0) > 0)
+ss_old = load_json("sale_start.json", {})
+ss = {}
+for i, r in fresh.items():
+    if not on_sale(r):
+        continue
+    if i in ss_old:
+        ss[i] = ss_old[i]
+    elif on_sale(cat.get(i)):
+        ss[i] = "0000"  # 前回からセール中で開始日が分からないもの
+    else:
+        ss[i] = T
+save_json("sale_start.json", dict(sorted(ss.items())))
+
 # 6. 価格の記録（ハコサーチの記録上の最安値）
 for i, r in fresh.items():
     pr = r.get("pr")

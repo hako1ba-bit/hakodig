@@ -72,6 +72,8 @@ def ja_name(title, desc):
 
 DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
 
+sale_start = load_json("sale_start.json", {})
+
 games, desc = [], {}
 for gid, r in cat.items():
     if gid in force_hide:
@@ -80,6 +82,8 @@ for gid, r in cat.items():
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
+    if gid in sale_start and r.get("pr") and r["pr"][2]:
+        g["ss"] = sale_start[gid]  # セールの開始日（ハコディグが見つけた日）
     if r.get("e"):
         g["e"] = r["e"]
     if DEMO.search(r["t"]):
