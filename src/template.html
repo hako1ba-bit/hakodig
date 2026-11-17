@@ -468,6 +468,17 @@ function alts(q){
   return _aa;
 }
 const hitAlt = (g, q) => alts(q).some(a => normT(g).includes(a) || normE(g).includes(a));
+// カタカナの表記ゆれを吸収して比べる（ヘイロー／ヘイロウ、ヴァ／バ、スペース／スペイス など）
+const SMALL = {"ァ":"ア","ィ":"イ","ゥ":"ウ","ェ":"エ","ォ":"オ"};
+function loose(s){
+  return s.replace(/[\s・･ー\-=＝ッ]/g, "").replace(/ヴ/g, "ブ").replace(/[ァィゥェォ]/g, c => SMALL[c])
+    .replace(/([オコソトノホモヨロゴゾドボポョ])ウ/g, "$1").replace(/([エケセテネヘメレゲゼデベペ])イ/g, "$1");
+}
+const NK = new WeakMap();
+const looseK = g => { let v = NK.get(g); if (v === undefined){ v = g.k ? loose(g.k) : ""; NK.set(g, v); } return v; };
+let _lq = null, _lv = "";
+const looseQ = q => { if (q !== _lq){ _lq = q; _lv = /[ァ-ヶ]/.test(q) ? loose(q) : ""; } return _lv; };
+const hitKana = (g, q) => { const lq = looseQ(q); return lq.length >= 2 && !!g.k && looseK(g).includes(lq); };
 // 関連度: 0=タイトル完全一致 1=先頭一致 2=単語の先頭・別名で一致 3=途中に含む 4=発行元のみ
 function rel1(t, q){
   if (!t) return 9;
@@ -478,7 +489,7 @@ function rel1(t, q){
   return t.includes(q) ? 3 : 9;
 }
 function relevance(g, q){
-  let r = Math.min(rel1(normT(g), q), rel1(normE(g), q));
+  let r = Math.min(rel1(normT(g), q), rel1(normE(g), q), looseQ(q) && g.k ? Math.max(2, rel1(looseK(g), looseQ(q))) : 9);
   if (r > 2 && hitAlt(g, q)) r = 2;
   return r < 9 ? r : 4;
 }
@@ -516,7 +527,7 @@ function pass(g){
     if (pr === "5000" && n > 5000) return false;
     if (pr === "over" && n < 5000) return false;
   }
-  if (q && !(normT(g).includes(q) || normE(g).includes(q) || norm(g.pub || "").includes(q) || hitAlt(g, q))) return false;
+  if (q && !(normT(g).includes(q) || normE(g).includes(q) || norm(g.pub || "").includes(q) || hitAlt(g, q) || hitKana(g, q))) return false;
   return true;
 }
 

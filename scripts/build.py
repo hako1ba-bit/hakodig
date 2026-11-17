@@ -1,3 +1,4 @@
+import re
 """data/ の内容と src/template.html から、公開用のサイト一式を _site/ に作る。"""
 import shutil
 from common import *
@@ -15,6 +16,44 @@ force_rel, force_hide = set(overrides.get("released", [])), set(overrides.get("h
 meta = load_json("meta.json", {})
 T = today()
 
+# ---------- 英語タイトルのカタカナ読み ----------
+# data/kana_words.txt（手で足した単語）→ alkana（英単語辞書）の順に引く。読めない単語は飛ばす
+KANA_WORDS = {}
+for line in open(os.path.join(ROOT, "data", "kana_words.txt"), encoding="utf-8"):
+    if "=" in line and not line.startswith("#"):
+        w, k = line.strip().split("=", 1)
+        KANA_WORDS[w.lower()] = k
+try:
+    import alkana
+except ImportError:
+    alkana = None
+SKIP_WORDS = set("ii iii iv vi vii viii ix xi xii xiii xiv xv xvi hd dlc ea th dx vs io fi op td ai sc gp fx alt tcg fc rpg x fmv wwii nba nfl nhl mlb pga ufc wwe fia wrc mx gat jdm mxgp motogp the a an and".split())
+def word_kana(w):
+    if w in KANA_WORDS:
+        return KANA_WORDS[w]
+    if not alkana:
+        return None
+    k = alkana.get_kana(w)
+    if k:
+        return k
+    for suf in ("'s", "es", "s"):
+        if w.endswith(suf) and len(w) > 3:
+            k = KANA_WORDS.get(w[:-len(suf)]) or alkana.get_kana(w[:-len(suf)])
+            if k:
+                return k + "ズ"
+    return None
+def kana_reading(title):
+    words = re.findall(r"[A-Za-z][A-Za-z']+", re.sub(r"[®™©]", "", title))
+    out = []
+    for w in words:
+        w = w.lower().strip("'")
+        if w in SKIP_WORDS:
+            continue
+        k = word_kana(w)
+        if k:
+            out.append(k)
+    return " ".join(out) or None
+
 games, desc = [], {}
 for gid, r in cat.items():
     if gid in force_hide:
@@ -25,6 +64,9 @@ for gid, r in cat.items():
          "pr": r.get("pr"), "img": r.get("img")}
     if r.get("e"):
         g["e"] = r["e"]
+    k = kana_reading(r["t"])
+    if k:
+        g["k"] = k  # 英語タイトルのカタカナ読み（「ギアーズ」「ヘイロー」などで探せるように）
     # ゲームパスの終了予定日（60日以内のものだけ。9998年などの仮の日付や遠い契約期限は除く）
     gx = {k: v for k, v in (r.get("gx") or {}).items() if T <= v <= today(60)}
     if gx:

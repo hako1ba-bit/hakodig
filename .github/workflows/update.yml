@@ -58,6 +58,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - run: pip install -q alkana==0.0.3
       - name: 一覧・価格・サブスク・Play Anywhere を取得
         if: inputs.skip_list != 'yes'
         run: python scripts/update_list.py
