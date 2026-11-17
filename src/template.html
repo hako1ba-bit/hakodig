@@ -198,6 +198,13 @@ dialog#dlg::backdrop{background:rgba(0,0,0,.6)}
 .cf-body{font-size:13px;color:var(--ink);opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:2px 0}
 .cf-meta{font-size:11.5px;color:var(--muted)}
 .cf-more{font:inherit;font-size:12.5px;background:transparent;border:0;color:var(--accent);cursor:pointer;padding:8px 0 0}
+@media (max-width:640px){
+  header.top{flex-direction:column;align-items:center;text-align:center;gap:12px}
+  header.top .brand,header.top .home{justify-content:center}
+  .hright{align-items:center;margin-left:0}
+  .proto{text-align:center}
+  .menu{right:50%;transform:translateX(50%)}
+}
 .legal{margin:14px 0 0;font-size:13px;text-align:center}.legal a{color:var(--muted)}
 .pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin-top:20px}
 .pager button{font:inherit;font-family:var(--f-mono);font-size:13px;min-width:38px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer}
