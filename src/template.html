@@ -1095,7 +1095,7 @@ function byId(id){
 }
 function sig(g){
   const p = g.price;
-  return {p: p ? p.now : null, o: p ? p.off || 0 : 0, gp: [...g.gp].sort(), gx: g.gx || {}, ja: g.lang || null, d: g.d || null, r: released(g) ? 1 : 0,
+  return {p: p ? p.now : null, m: p ? p.was : null, o: p ? p.off || 0 : 0, gp: [...g.gp].sort(), gx: g.gx || {}, ja: g.lang || null, d: g.d || null, r: released(g) ? 1 : 0,
           lo: p && p.now > 0 ? p.now : null};
 }
 const JA = ["音声", "UI", "字幕"];
@@ -1106,6 +1106,7 @@ function diffs(o, n){
   if (!o.d && n.d && !n.r) out.push(`発売日が決まりました（${fmtDate(n.d)}）`);
   else if (o.d && n.d && o.d !== n.d && !n.r) out.push(`発売日が変わりました（${fmtDate(o.d)} → ${fmtDate(n.d)}）`);
   if (o.p == null && n.p != null) out.push(n.p === 0 ? "無料で入手できるようになりました" : `価格が決まりました（${yen(n.p)}）`);
+  if (o.m > 0 && n.m > 0 && o.m !== n.m) out.push(`通常価格が${n.m < o.m ? "値下げ" : "値上げ"}されました（${yen(o.m)} → ${yen(n.m)}）`);
   if (!o.o && n.o) out.push(`セール開始：${n.o}%オフ（${yen(n.p)}）`);
   else if (o.o && !n.o) out.push("セールが終わりました");
   const low = Math.min(...[o.lo, o.p].filter(x => x > 0));
