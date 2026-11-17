@@ -120,13 +120,7 @@ for gid, r in cat.items():
         gx.setdefault(k, "soon")
     if gx:
         g["gx"] = gx
-    gn = {k: v for k, v in (r.get("gn") or {}).items() if T <= v <= today(60)}
-    for k, v in gn.items():  # 今日追加の分（取得したあと日付が変わった）はもうそのプランで遊べる
-        if v <= T and k not in g["gp"]:
-            g["gp"] = [x for x in ORDER if x in g["gp"] or x == k]
-    for k, d in (r.get("ga") or {}).items():  # 追加されたばかり（3日以内）も近日追加に残す
-        if today(-3) <= d <= T and k in (r.get("gp") or []):
-            gn.setdefault(k, d)
+    gn = {k: v for k, v in (r.get("gn") or {}).items() if T < v <= today(60)}
     for k, d in (GP_MANUAL.get("add", {}).get(gid) or {}).items():  # 発表済みでストアに未反映の追加予定
         if T < d and k not in (r.get("gp") or []):
             gn.setdefault(k, d)

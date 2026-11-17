@@ -29,8 +29,6 @@ def compact(p):
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     gp, gx, gn = {PASS[k] for k in p.get("includedWithPassesProductIds") or [] if k in PASS}, {}, {}
     ge = []  # ゲームパスなどに入った日
-    ga = {}  # 最近（7日以内）入ったプランと日付（ほかのプランには前から入っている作品の追加も「近日追加」に出すため）
-    week = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S")
     jst = lambda x: (datetime.datetime.fromisoformat(x.replace("Z", "+00:00")) + datetime.timedelta(hours=9)).date().isoformat()
     for k, m in (p.get("passMetadataByPassProductId") or {}).items():
         if k not in PASS:
@@ -43,8 +41,6 @@ def compact(p):
         ex = (m or {}).get("exitDateUTC") or ""
         if en and (not ex or ex > now) and PASS[k] not in ("EA Play", "Ubisoft+"):
             ge.append(jst(en))  # ゲームパス（EA Play・Ubisoft+ は除く）に入った日
-            if en > week:
-                ga[PASS[k]] = jst(en)
         if not ex:
             gp.add(PASS[k])
         elif ex > now:
@@ -53,7 +49,7 @@ def compact(p):
     return {"id": p["productId"], "t": p.get("title") or "", "pub": (p.get("publisherName") or "").strip(),
             "cat": (p.get("categories") or [""])[0], "d": d, "pl": p.get("availableOn") or [],
             "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0, **({"gx": gx} if gx else {}), **({"gn": gn} if gn else {}),
-            **({"ge": min(ge)} if ge else {}), **({"ga": ga} if ga else {}),
+            **({"ge": min(ge)} if ge else {}),
             **({"big": 1} if (p.get("maxInstallSize") or 0) >= 1_000_000_000 else {})}
 
 
