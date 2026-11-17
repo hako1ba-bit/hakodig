@@ -124,6 +124,7 @@ for i, r in fresh.items():
 save_jsonl("catalog.jsonl", fresh)
 save_jsonl("low.jsonl", low)
 meta["list_at"] = T
+meta["list_t"] = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")  # 日本時間
 meta["count"] = len(fresh)
 save_json("meta.json", meta)
 print("saved catalog:", len(fresh), "partial" if partial else "", flush=True)

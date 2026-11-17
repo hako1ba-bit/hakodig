@@ -1,12 +1,16 @@
-# 毎日 4:17（日本時間）にストアの情報を取り直し、サイトを更新する
-# GitHubの定時実行は飛ばされることがあるので、5:47・7:17 にも予備で起動する。
-# 予備の回は、その日の一覧更新が済んでいれば何もせず終わる。
+# 毎日2回、ストアの情報を取り直してサイトを更新する
+# - 朝 4:17（日本時間）: 一覧・価格・セール・ゲームパス＋日本語情報の確認（重い処理）
+# - 夕方 15:47: 一覧・価格・セール・ゲームパス＋新作の日本語情報だけ（軽い処理。夕方からのセールを当日中に拾う）
+# GitHubの定時実行は飛ばされることがあるので、朝は 5:47・7:17、夕方は 17:17 にも予備で起動する。
+# 予備の回は、その回の更新が済んでいれば何もせず終わる。
 name: 毎日の更新
 on:
   schedule:
     - cron: "17 19 * * *"
     - cron: "47 20 * * *"
     - cron: "17 22 * * *"
+    - cron: "47 6 * * *"
+    - cron: "17 8 * * *"
   workflow_dispatch:
     inputs:
       detail_minutes:
@@ -32,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       go: ${{ steps.c.outputs.go }}
+      eve: ${{ steps.c.outputs.eve }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,11 +46,15 @@ jobs:
         run: |
           today=$(TZ=Asia/Tokyo date +%F)
           done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('list_at',''))")
+          done_t=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('list_t','00:00'))")
+          case "${{ github.event.schedule }}" in "47 6 * * *"|"17 8 * * *") eve=1 ;; *) eve=0 ;; esac
+          echo "eve=$eve" >> "$GITHUB_OUTPUT"
+          skip=0
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$done" = "$today" ]; then
-            echo "今日（$today）の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"
-          else
-            echo "go=yes" >> "$GITHUB_OUTPUT"
+            # 朝の回: 今日の更新が済んでいれば終了。夕方の回: 15時以降の更新が済んでいれば終了
+            if [ "$eve" = "0" ] || [ "$done_t" \> "14:59" ]; then skip=1; fi
           fi
+          if [ "$skip" = "1" ]; then echo "この回の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"; else echo "go=yes" >> "$GITHUB_OUTPUT"; fi
   update:
     needs: check
     if: needs.check.outputs.go == 'yes'
@@ -72,7 +81,7 @@ jobs:
         run: gh workflow run build.yml --ref main
       - name: 言語情報を取得（決めた時間まで）
         id: details
-        run: python scripts/update_details.py --minutes ${{ inputs.detail_minutes || '300' }}
+        run: python scripts/update_details.py --minutes ${{ needs.check.outputs.eve == '1' && '20' || inputs.detail_minutes || '300' }} ${{ needs.check.outputs.eve == '1' && '--rotate 0' || '' }}
       - name: 言語情報を保存
         run: sh scripts/commit_data.sh "言語情報"
       - name: サイトを作る
@@ -87,7 +96,7 @@ jobs:
           npx -y wrangler@4.151.0 d1 migrations apply hakodig --remote
           npx -y wrangler@4.151.0 deploy
       - name: 未取得が残っていれば、続きを起動する
-        if: steps.details.outputs.left != '0'
+        if: steps.details.outputs.left != '0' && needs.check.outputs.eve != '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run update.yml --ref main -f skip_list=yes -f detail_minutes=300
