@@ -700,6 +700,10 @@ function render(){
   $("#sort option[value=date]").textContent = v === "sale" ? "セール開始が新しい順" : v === "demo" ? "配信日順" : "発売日順";
   const se = $("#sort option[value=saleEnd]"); se.hidden = se.disabled = v !== "sale";
   if (v !== "sale" && $("#sort").value === "saleEnd") $("#sort").value = "date";
+  // ゲームパス関係の並び順は、ゲームパスのプラン（Essential〜PC Game Pass）を選んだときだけ使える
+  const gpSel = [...SEL.gp].some(x => x !== "EA Play" && x !== "Ubisoft+");
+  ["gpNew", "leaving"].forEach(k => { const o = $(`#sort option[value=${k}]`); o.hidden = o.disabled = !gpSel; });
+  if (!gpSel && ["gpNew", "leaving"].includes($("#sort").value)) $("#sort").value = "date";
   const sort = $("#sort").value;
   const pool = DATA.filter(inTab);
   const endKey = g => { const e = g.price && g.price.end; if (!e) return "9999-99-99"; const [m,d,y] = e.split("/"); return `${y}-${m}-${d}`; };
