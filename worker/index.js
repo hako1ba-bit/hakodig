@@ -196,7 +196,7 @@ async function api(req, env, url) {
   }
   if (p === "/api/account" && m === "DELETE") {
     // 退会：この人に関するデータをすべて消す
-    await env.DB.batch(["comments", "favs", "hides", "prefs", "sessions", "reports"].map(t =>
+    await env.DB.batch(["comments", "favs", "hides", "prefs", "sessions", "reports", "notice_log"].map(t =>
       env.DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(me.id)).concat(
       env.DB.prepare("DELETE FROM users WHERE id = ?").bind(me.id)));
     return json({ ok: true }, 200, { "set-cookie": setCookie("__Host-hd_sid", "", 0) });
@@ -231,6 +231,21 @@ async function api(req, env, url) {
     const items = Object.entries(body.items || {}).filter(([g, v]) => GAME_ID.test(g) && typeof v === "string" && v.length <= 300).slice(0, 1000);
     for (let i = 0; i < items.length; i += 50)
       await env.DB.batch(items.slice(i, i + 50).map(([g, v]) => env.DB.prepare("UPDATE favs SET snap = ? WHERE user_id = ? AND game_id = ?").bind(v, me.id, g)));
+    return json({ ok: true });
+  }
+  // お知らせの履歴（確認したお知らせを、最新10件まで残す）
+  if (p === "/api/notices" && m === "GET") {
+    const { results } = await env.DB.prepare("SELECT at, data FROM notice_log WHERE user_id = ? ORDER BY id DESC LIMIT 10").bind(me.id).all();
+    return json({ notices: results.map(r => ({ at: r.at, ...JSON.parse(r.data) })) });
+  }
+  if (p === "/api/notices" && m === "POST") {
+    const list = (Array.isArray(body.items) ? body.items : []).slice(0, 10).map(x => ({
+      g: GAME_ID.test(x.g || "") ? x.g : "", t: String(x.t || "").slice(0, 120),
+      m: (Array.isArray(x.m) ? x.m : []).slice(0, 8).map(y => String(y).slice(0, 120)),
+    })).filter(x => x.g);
+    const t = now();
+    await env.DB.batch(list.map(x => env.DB.prepare("INSERT INTO notice_log (user_id, at, data) VALUES (?, ?, ?)").bind(me.id, t, JSON.stringify(x))).concat(
+      env.DB.prepare("DELETE FROM notice_log WHERE user_id = ? AND id NOT IN (SELECT id FROM notice_log WHERE user_id = ? ORDER BY id DESC LIMIT 10)").bind(me.id, me.id)));
     return json({ ok: true });
   }
   if (p === "/api/hide" && m === "POST") {

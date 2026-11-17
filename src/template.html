@@ -182,6 +182,7 @@ dialog#dlg::backdrop{background:rgba(0,0,0,.6)}
 .nt-t{font-weight:700;margin:0 0 4px!important}
 .nt ul{margin:0 0 6px;padding-left:1.2em;font-size:13px}
 .nt a{font-size:12px;color:var(--accent)}
+.nt-at{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);margin-left:6px}
 @media (max-width:520px){.tab{font-size:13px;padding:8px 5px}.tab .n{margin-left:2px;font-size:10.5px}.tabs{gap:0;justify-content:space-between}}
 .cfeed{margin:0 0 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
 .cfeed-head{width:100%;display:flex;align-items:center;gap:12px;padding:9px 14px;background:transparent;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-align:left}
@@ -942,6 +943,7 @@ function acctHtml(){
       <p class="menu-who">ログイン中：${esc(n)}</p>
       ${NOTICE.length ? `<button type="button" data-act="notice" class="hot">お気に入りのお知らせ（${NOTICE.length}）</button>` : ""}
       <button type="button" data-act="fav">★ お気に入り（${ME.favs.size}）</button>
+      <button type="button" data-act="nlog">お知らせの履歴</button>
       <button type="button" data-act="hid">非表示にした作品（${ME.hides.size}）</button>
       <button type="button" data-act="nick">ニックネームを変える</button>
       ${ME.user.admin ? `<button type="button" data-act="admin" class="${ME.user.reports ? "hot-rep" : ""}">管理（通報の確認）${ME.user.reports ? `：未対応 ${ME.user.reports}件` : ""}</button>` : ""}
@@ -1021,6 +1023,7 @@ $("#acct").addEventListener("click", async e => {
   if (a === "fav" || a === "hid"){ tab = a; $("#q").value = ""; lastQ = ""; refresh(); document.querySelector(".tabs").scrollIntoView({behavior: "smooth"}); }
   else if (a === "nick") nickDlg(false);
   else if (a === "notice") noticeDlg();
+  else if (a === "nlog") noticeLogDlg();
   else if (a === "admin") adminDlg();
   else if (a === "delete") deleteDlg();
   else if (a === "logout"){ await api("/api/logout", {method: "POST"}).catch(() => {}); location.href = "/"; }
@@ -1145,7 +1148,7 @@ function byId(id){
 }
 function sig(g){
   const p = g.price;
-  return {p: p ? p.now : null, m: p ? p.was : null, o: p ? p.off || 0 : 0, gp: [...g.gp].sort(), gx: g.gx || {}, ja: g.lang || null, d: g.d || null, r: released(g) ? 1 : 0,
+  return {p: p ? p.now : null, m: p ? p.was : null, o: p ? p.off || 0 : 0, px: g.pa ? 1 : 0, gp: [...g.gp].sort(), gx: g.gx || {}, ja: g.lang || null, d: g.d || null, r: released(g) ? 1 : 0,
           lo: p && p.now > 0 ? p.now : null};
 }
 const JA = ["音声", "UI", "字幕"];
@@ -1164,6 +1167,7 @@ function diffs(o, n){
   n.gp.filter(x => !o.gp.includes(x)).forEach(x => out.push(`${x} に追加されました`));
   o.gp.filter(x => !n.gp.includes(x)).forEach(x => out.push(`${x} から外れました`));
   Object.entries(n.gx).filter(([x, d]) => !o.gx[x] || (o.gx[x] === "soon" && d !== "soon")).forEach(([x, d]) => out.push(d === "soon" ? `${x} からまもなく外れます` : `${x} から ${md(d)} に外れる予定です`));
+  if (o.px === 0 && n.px === 1) out.push("Xbox Play Anywhere に対応しました");
   if (n.ja){
     const got = JA.filter((l, i) => n.ja[i] && !(o.ja && o.ja[i]));
     if (got.length) out.push(`日本語${got.join("・")}に対応しました`);
@@ -1195,12 +1199,27 @@ function noticeDlg(){
     <div class="dlg-act"><button type="button" class="ghost" data-close>あとで</button><button type="button" class="btn" id="notice-done">確認した</button></div>`);
   $("#notice-done").onclick = async () => {
     const items = Object.fromEntries(NOTICE.map(x => [x.id, x.cur]));
+    const logItems = NOTICE.map(x => ({g: x.id, t: x.g.t, m: x.msgs}));
     Object.assign(ME.snaps, items); NOTICE = []; closeDlg(); drawAcct(); $("#notice-bar").hidden = true;
     await api("/api/snaps", {method: "POST", body: {items}}).catch(() => {});
+    await api("/api/notices", {method: "POST", body: {items: logItems}}).catch(() => {});
   };
 }
 $("#notice-bar").addEventListener("click", e => { if (e.target.closest("#notice-open")) noticeDlg(); });
 
+
+// 届いたお知らせの履歴（「確認した」を押したものを最新10件まで）
+async function noticeLogDlg(){
+  openDlg(`<h2>お知らせの履歴</h2><p>確認したお知らせを、新しい順に10件まで残しています。</p><div class="notices" id="nlog">読み込み中…</div>
+    <div class="dlg-act"><button type="button" class="ghost" data-close>閉じる</button></div>`);
+  try {
+    const {notices} = await api("/api/notices");
+    $("#nlog").innerHTML = !notices.length ? "<p>まだ履歴はありません。</p>" : notices.map(x => `<div class="nt">
+      <p class="nt-t">★ ${esc(x.t)} <span class="nt-at">${esc(x.at.slice(5,10).replace("-", "/"))}</span></p>
+      <ul>${x.m.map(m => `<li>${esc(m)}</li>`).join("")}</ul>
+      <a href="https://www.xbox.com/ja-JP/games/store/_/${esc(x.g)}" target="_blank" rel="noopener">公式ストアで見る</a></div>`).join("");
+  } catch (err) { $("#nlog").textContent = err.message; }
+}
 // ---------- 検索項目の並び順・表示件数をアカウントに保存 ----------
 let prefsTimer = 0;
 function syncPrefs(){

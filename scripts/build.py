@@ -74,10 +74,14 @@ DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial
 
 sale_start = load_json("sale_start.json", {})
 dlc = load_json("dlc.json", {})
+GP_MANUAL = load_json("gp_manual.json", {})
 # 同梱されているDLC（シーズンパスなど）は、そのエディションの一覧から除く
 for v in dlc.values():
     inc = set(v.get("inc") or [])
-    v["items"] = [x for x in v["items"] if x[0] not in inc]
+    # 同梱のシーズンパスなどに含まれるキャラ等も除く（DLC名に「"春麗"」「「ケン」」のように名前が入っているもの）
+    names = [n for i in inc for n in (v.get("sub") or {}).get(i, [])]
+    quoted = lambda t: any(q[0] + n + q[1] in t for n in names for q in ('""', "「」", "“”"))
+    v["items"] = [x for x in v["items"] if x[0] not in inc and not quoted(x[1])]
 
 games, desc = [], {}
 for gid, r in cat.items():
@@ -105,11 +109,19 @@ for gid, r in cat.items():
         g["k"] = k  # 英語タイトルのカタカナ読み（「ギアーズ」「ヘイロー」などで探せるように）
     # ゲームパスの終了予定日（60日以内のものだけ。9998年などの仮の日付や遠い契約期限は除く）
     gx = {k: v for k, v in (r.get("gx") or {}).items() if T <= v <= today(60)}
+    # Xbox Wire などで発表された終了日（ストアに日付が入るまでの手動の補足）
+    if gid in GP_MANUAL.get("leave", {}):
+        for k in r.get("gp") or []:
+            if k in ("Essential", "Premium", "Ultimate", "PC Game Pass") and T <= GP_MANUAL["leave"][gid]:
+                gx.setdefault(k, GP_MANUAL["leave"][gid])
     for k in r.get("lv") or []:  # ゲームパスの「まもなく終了」一覧に載っている（終了日は未発表）
         gx.setdefault(k, "soon")
     if gx:
         g["gx"] = gx
     gn = {k: v for k, v in (r.get("gn") or {}).items() if T < v <= today(60)}
+    for k, d in (GP_MANUAL.get("add", {}).get(gid) or {}).items():  # 発表済みでストアに未反映の追加予定
+        if T < d and k not in (r.get("gp") or []):
+            gn.setdefault(k, d)
     if gn:
         g["gn"] = gn  # ゲームパスに近日追加
     if r.get("rc"):

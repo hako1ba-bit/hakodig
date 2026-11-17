@@ -17,7 +17,16 @@ targets += [i for i in load_json("dlc_targets.json", []) if i in cat and i not i
 if args.evening:
     targets = [i for i in targets if i in old]
 
-def addons(gid):
+NAME_IN = re.compile(r"[「\"“]([^」\"”]{1,30})[」\"”]")
+def contents(desc):
+    """シーズンパスなどの説明文の「・〜」の行から、含まれるキャラ等の名前を拾う"""
+    names = []
+    for line in (desc or "").splitlines():
+        if line.strip().startswith(("・", "-", "•")):
+            names += [n for n in NAME_IN.findall(line) if n not in ("追加ステージ", "ゲーム本編")]
+    return names
+
+def addons(gid, sub):
     ct, n, items = "", 0, []
     while n < 80:  # 1ページ25件。DOAシリーズのようにコスチュームが千件を超える作品もある
         n += 1
@@ -32,6 +41,9 @@ def addons(gid):
             end = (pr.get("endDateUtc") or "").split(" ")[0] if off else ""
             items.append([p["productId"], p.get("title") or "", pr.get("listPrice"), pr.get("msrp"), off,
                           "" if end.startswith("12/30/9998") else end])
+            c = contents(p.get("description"))
+            if c:
+                sub[p["productId"]] = c  # このDLC（シーズンパス等）に含まれるもの
         ch = list((j.get("channels") or {"x": {}}).values())[0]
         ct = ch.get("encodedCT")
         time.sleep(1)
@@ -54,22 +66,39 @@ def bundled(gid):
     time.sleep(1)
     return [p["productId"] for p in j.get("productSummaries") or []]
 
+BUNDLE_CACHE = {}
+def bundled_all(gid):
+    """同梱されているものに加えて、同梱のシーズンパスなどに含まれる中身（キャラ等）も返す"""
+    inc = bundled(gid)
+    out = list(inc)
+    for i in inc:
+        if i == gid:
+            continue
+        if i not in BUNDLE_CACHE:
+            try:
+                BUNDLE_CACHE[i] = bundled(i)
+            except Exception:
+                BUNDLE_CACHE[i] = []
+        out += [x for x in BUNDLE_CACHE[i] if x not in out]
+    return out
+
 T = today()
 out = dict(old)
 ok = 0
 for gid in targets:
     try:
-        items = addons(gid)
+        sub = {}
+        items = addons(gid, sub)
     except Exception as e:
         print("dlc failed:", gid, e, flush=True)
         continue
     ok += 1
     if items:
         try:
-            inc = bundled(gid)
+            inc = bundled_all(gid)
         except Exception:
             inc = (old.get(gid) or {}).get("inc", [])
-        out[gid] = {"at": T, "items": items, "inc": inc}
+        out[gid] = {"at": T, "items": items, "inc": inc, "sub": sub}
     else:
         out.pop(gid, None)
 # 対象から外れた作品（ストアから消えた等）は消す
