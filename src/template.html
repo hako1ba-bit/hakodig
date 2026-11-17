@@ -368,6 +368,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
 <script>
 let RAW = __DATA__;
 const ALIASES = __ALIASES__;
+const PUBS = __PUBS__;
 let FULL = false;
 // ログイン中の人の情報（お気に入り・非表示）と、作品ごとのコメント
 const ME = {user: null, favs: new Set(), hides: new Set(), snaps: {}};
@@ -469,6 +470,16 @@ function alts(q){
   if (q !== _aq){ _aq = q; _aa = q.length < 2 ? [] : [...new Set(ALIAS.filter(([all]) => all.some(a => a.startsWith(q))).flatMap(([, ts]) => ts))]; }
   return _aa;
 }
+// 発行元の別名（カプコン ⇔ Capcom など）
+const PUBN = PUBS.map(gr => gr.map(norm));
+let _pq = null, _pa = [];
+function pubAlts(q){
+  if (q !== _pq){ _pq = q; _pa = q.length < 2 ? [] : [...new Set(PUBN.filter(gr => gr.some(a => a.startsWith(q) || (q.length >= 3 && q.startsWith(a)))).flat())]; }
+  return _pa;
+}
+const NP = new WeakMap();
+const normP = g => { let v = NP.get(g); if (v === undefined){ v = norm(g.pub || ""); NP.set(g, v); } return v; };
+const hitPub = (g, q) => normP(g).includes(q) || pubAlts(q).some(a => a.length >= 2 && normP(g).includes(a));
 const hitAlt = (g, q) => alts(q).some(a => normT(g).includes(a) || normE(g).includes(a));
 // カタカナの表記ゆれを吸収して比べる（ヘイロー／ヘイロウ、ヴァ／バ、スペース／スペイス など）
 const SMALL = {"ァ":"ア","ィ":"イ","ゥ":"ウ","ェ":"エ","ォ":"オ"};
@@ -529,7 +540,7 @@ function pass(g){
     if (pr === "5000" && n > 5000) return false;
     if (pr === "over" && n < 5000) return false;
   }
-  if (q && !(normT(g).includes(q) || normE(g).includes(q) || norm(g.pub || "").includes(q) || hitAlt(g, q) || hitKana(g, q))) return false;
+  if (q && !(normT(g).includes(q) || normE(g).includes(q) || hitPub(g, q) || hitAlt(g, q) || hitKana(g, q))) return false;
   return true;
 }
 

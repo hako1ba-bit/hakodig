@@ -172,7 +172,7 @@ for s, m in desc.items():
         f.write(dump(m))
 
 t = open(os.path.join(ROOT, "src", "template.html"), encoding="utf-8").read()
-t = (t.replace("__DATA__", dump(first)).replace("__ALIASES__", dump(aliases))
+t = (t.replace("__DATA__", dump(first)).replace("__ALIASES__", dump(aliases)).replace("__PUBS__", dump(load_json("publishers.json", [])))
       .replace("__FETCHED__", T.replace("-", ".")).replace("__TODAY__", T))
 page = ('<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'

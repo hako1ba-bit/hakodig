@@ -3,7 +3,7 @@ name: サイトの作り直し
 on:
   push:
     branches: [main]
-    paths: ["src/**", "worker/**", "wrangler.toml", "scripts/build.py", "data/aliases.json", "data/kana_words.txt", "data/ja_names.json", "data/overrides.json", ".github/run-build"]
+    paths: ["src/**", "worker/**", "wrangler.toml", "scripts/build.py", "data/aliases.json", "data/kana_words.txt", "data/ja_names.json", "data/publishers.json", "data/overrides.json", ".github/run-build"]
   workflow_dispatch:
 
 permissions:
