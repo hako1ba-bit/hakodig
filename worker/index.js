@@ -181,17 +181,25 @@ async function api(req, env, url) {
 
   if (p === "/api/state" && m === "GET") {
     const [f, h, pr] = await env.DB.batch([
-      env.DB.prepare("SELECT game_id FROM favs WHERE user_id = ?").bind(me.id),
+      env.DB.prepare("SELECT game_id, snap FROM favs WHERE user_id = ?").bind(me.id),
       env.DB.prepare("SELECT k FROM hides WHERE user_id = ?").bind(me.id),
       env.DB.prepare("SELECT data FROM prefs WHERE user_id = ?").bind(me.id),
     ]);
-    return json({ favs: f.results.map(r => r.game_id), hides: h.results.map(r => r.k), prefs: pr.results[0] ? JSON.parse(pr.results[0].data) : null });
+    return json({ favs: f.results.map(r => r.game_id), snaps: Object.fromEntries(f.results.filter(r => r.snap).map(r => [r.game_id, r.snap])), hides: h.results.map(r => r.k), prefs: pr.results[0] ? JSON.parse(pr.results[0].data) : null });
   }
   if (p === "/api/fav" && m === "POST") {
     if (!GAME_ID.test(body.g || "")) return json({ error: "作品IDが不正です" }, 400);
+    const snap = typeof body.snap === "string" && body.snap.length <= 300 ? body.snap : null;
     await (body.on
-      ? env.DB.prepare("INSERT OR IGNORE INTO favs (user_id, game_id, created_at) VALUES (?, ?, ?)").bind(me.id, body.g, now())
+      ? env.DB.prepare("INSERT OR IGNORE INTO favs (user_id, game_id, created_at, snap) VALUES (?, ?, ?, ?)").bind(me.id, body.g, now(), snap)
       : env.DB.prepare("DELETE FROM favs WHERE user_id = ? AND game_id = ?").bind(me.id, body.g)).run();
+    return json({ ok: true });
+  }
+  // お気に入りの「確認済みの状態」をまとめて更新する
+  if (p === "/api/snaps" && m === "POST") {
+    const items = Object.entries(body.items || {}).filter(([g, v]) => GAME_ID.test(g) && typeof v === "string" && v.length <= 300).slice(0, 1000);
+    for (let i = 0; i < items.length; i += 50)
+      await env.DB.batch(items.slice(i, i + 50).map(([g, v]) => env.DB.prepare("UPDATE favs SET snap = ? WHERE user_id = ? AND game_id = ?").bind(v, me.id, g)));
     return json({ ok: true });
   }
   if (p === "/api/hide" && m === "POST") {
