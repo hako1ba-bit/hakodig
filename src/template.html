@@ -205,6 +205,15 @@ dialog#dlg::backdrop{background:rgba(0,0,0,.6)}
   .proto{text-align:center}
   .menu{right:50%;transform:translateX(50%)}
 }
+.dlc{border-top:1px dashed var(--line);padding-top:10px}
+.dlc-btn{font:inherit;font-size:13px;font-weight:700;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.dlc-btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.dl-list{margin-top:8px;display:flex;flex-direction:column}
+.dl-item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 2px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:13px}
+.dl-item:hover .dl-n{color:var(--accent)}
+.dl-n{min-width:0;overflow-wrap:anywhere}
+.dl-p{white-space:nowrap;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.dl-p b{color:var(--ink)}.dl-p .off{color:var(--warn);font-weight:700}
 .legal{margin:14px 0 0;font-size:13px;text-align:center}.legal a{color:var(--muted)}
 .pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin-top:20px}
 .pager button{font:inherit;font-family:var(--f-mono);font-size:13px;min-width:38px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer}
@@ -434,7 +443,7 @@ function group(RAW){
     const m = g.t.match(SUFFIX);
     const base = m ? g.t.replace(SUFFIX, "") : g.t;
     const key = base.toLowerCase() + "|" + (g.pub||"").trim().toLowerCase();
-    const v = {id: g.id, label: versionLabel(g, m && m[1]), lang: g.lang, price: priceOf(g)};
+    const v = {id: g.id, label: versionLabel(g, m && m[1]), lang: g.lang, price: priceOf(g), dl: g.dl};
     if (!map.has(key)) map.set(key, {...g, t: base, pl: [...g.pl], gp: [...g.gp], versions: [v]});
     else {
       const x = map.get(key);
@@ -639,6 +648,7 @@ function card(g){
       ${descHtml(g)}
       ${g.lo ? `<p class="lo">ハコディグ記録上の最安値：<b>${yen(g.lo[0])}</b>（${g.lo[1].replace(/-/g, "/")}）</p>` : ""}
       <div class="links">${links}</div>
+      ${dlcHtml(g)}
       ${actHtml(g)}
       ${cmHtml(g)}
     </div>` : "";
@@ -1040,6 +1050,7 @@ function cmHtml(g){
 $("#list").addEventListener("click", async e => {
   const b = e.target.closest("[data-a]"); if (!b) return;
   const a = b.dataset.a, g = b.dataset.g;
+  if (a === "dlc"){ DLOPEN.has(g) ? DLOPEN.delete(g) : DLOPEN.add(g); render(); return; }
   try {
     if (a === "login") return loginDlg();
     if (a === "nick") return nickDlg(!ME.user.nick);
@@ -1086,6 +1097,34 @@ $("#list").addEventListener("submit", async e => {
 });
 
 
+
+// ---------- DLC（カードの中で、押したときだけ読み込む） ----------
+const DL = {}, DLOPEN = new Set();
+function dlcHtml(g){
+  const v = g.versions.find(x => x.dl);
+  if (!v) return "";
+  const open = DLOPEN.has(v.id);
+  return `<div class="dlc"><button type="button" class="dlc-btn" data-a="dlc" data-g="${v.id}" aria-expanded="${open}">DLC・追加コンテンツ（${v.dl}）<span aria-hidden="true">${open ? "▴" : "▾"}</span></button>${open ? dlcList(v.id) : ""}</div>`;
+}
+function dlcList(id){
+  const items = DL[id];
+  if (items === undefined){
+    DL[id] = null;
+    fetch(`dlc/${id}.json`).then(r => r.json()).then(x => { DL[id] = x; render(); }).catch(() => { DL[id] = []; render(); });
+  }
+  if (!items) return `<p class="cm-none">読み込み中…</p>`;
+  if (!items.length) return `<p class="cm-none">DLCの情報を読み込めませんでした。</p>`;
+  // 名前の先頭に共通して付いている作品名（「餓狼伝説 CotW」など）は省く
+  const names = items.map(x => x[1]);
+  let pre = names.reduce((a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(0, i); });
+  pre = names.length > 1 ? pre.slice(0, pre.lastIndexOf(" ") + 1) : "";
+  return `<div class="dl-list">${items.map(([pid, name, now, was, off, end]) => {
+    const price = now === 0 ? "無料" : now == null ? "" : off > 0
+      ? `<s>${yen(was)}</s> <b>${yen(now)}</b> <span class="off">-${off}%</span>` : yen(now);
+    return `<a class="dl-item" href="https://www.xbox.com/ja-JP/games/store/_/${esc(pid)}" target="_blank" rel="noopener">
+      <span class="dl-n">${esc(name.slice(pre.length) || name)}</span><span class="dl-p">${price}</span></a>`;
+  }).join("")}</div>`;
+}
 // ---------- お気に入りの変化のお知らせ ----------
 // 作品の「今の状態」を短くまとめる。前回確認したときと比べて、変わったところを知らせる
 let VMAP = null;

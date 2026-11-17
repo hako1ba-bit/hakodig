@@ -73,6 +73,7 @@ def ja_name(title, desc):
 DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
 
 sale_start = load_json("sale_start.json", {})
+dlc = load_json("dlc.json", {})
 
 games, desc = [], {}
 for gid, r in cat.items():
@@ -82,6 +83,8 @@ for gid, r in cat.items():
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
+    if gid in dlc and dlc[gid]["items"]:
+        g["dl"] = len(dlc[gid]["items"])  # DLCの数（中身はカードで押したときに dlc/ID.json を読む）
     if r.get("ge") and r.get("gp"):
         g["ge"] = r["ge"]  # ゲームパスなどに入った日
     if gid in sale_start and r.get("pr") and r["pr"][2]:
@@ -190,6 +193,12 @@ page = ('<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as f:
     f.write(page)
 open(os.path.join(OUT, ".nojekyll"), "w").close()
+
+# DLC一覧（作品ごと。カードで「DLC」を押したときだけ読む）
+os.makedirs(os.path.join(OUT, "dlc"), exist_ok=True)
+for gid, v in dlc.items():
+    with open(os.path.join(OUT, "dlc", gid + ".json"), "w", encoding="utf-8") as f:
+        json.dump(v["items"], f, ensure_ascii=False, separators=(",", ":"))
 
 # プライバシーポリシー・利用規約
 head = open(os.path.join(ROOT, "src", "pages", "_head.html"), encoding="utf-8").read()

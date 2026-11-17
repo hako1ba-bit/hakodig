@@ -87,6 +87,8 @@ jobs:
       - name: 言語情報を取得（決めた時間まで）
         id: details
         run: python scripts/update_details.py --minutes ${{ needs.check.outputs.eve == '1' && '20' || inputs.detail_minutes || '300' }} ${{ needs.check.outputs.eve == '1' && '--rotate 0' || '' }}
+      - name: DLCの一覧（試験中：data/dlc_targets.json の作品だけ）
+        run: python scripts/update_dlc.py
       - name: 言語情報を保存
         run: sh scripts/commit_data.sh "言語情報"
       - name: サイトを作る
