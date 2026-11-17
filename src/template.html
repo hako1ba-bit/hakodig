@@ -680,7 +680,8 @@ function card(g){
 
 const onSale = g => !!(g.price && g.price.off > 0);
 // 検索語が入っているときは、タブに関係なく全ゲームから探す
-const viewTab = () => $("#q").value.trim() ? "all" : tab;
+// 検索語があるとき、または「近日追加」を選んだときは、発売前の作品も含めて全体から出す
+const viewTab = () => $("#q").value.trim() || ($("#f-coming").checked && (tab === "released" || tab === "upcoming")) ? "all" : tab;
 // 発売日の記載がない（仮の日付 9998年など）作品は、サブスク対象・購入できる価格・ストアの評価のどれかがあれば発売済み
 const PREVIEW = /game preview|ゲーム ?プレビュー/i;
 // Xbox 360・XBLA など旧世代の作品はIDが英字で始まる（今の作品は 9 から始まる）
