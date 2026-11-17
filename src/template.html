@@ -151,7 +151,7 @@ dialog#dlg::backdrop{background:rgba(0,0,0,.6)}
 .act{font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
 .act.on{border-color:var(--none);color:var(--none)}
 .star{color:var(--none);margin-right:4px}
-.cmn{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-left:8px;font-weight:400;white-space:nowrap}
+.tag.cmt{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .cm{border-top:1px dashed var(--line);padding-top:10px}
 .cm h3{font-family:var(--f-display);font-size:14px;margin:0 0 8px}
 .cm-item{padding:8px 0;border-bottom:1px solid var(--line)}
@@ -544,6 +544,7 @@ function card(g){
   const src = g.img && !/^(data:|https?:)/.test(g.img) ? IMG_BASE + g.img + IMG_SIZE : g.img;
   const img = src ? `<img class="thumb" src="${src}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true">${esc(g.t.slice(0,1))}</span>`;
   const tags = [
+    CMN[g.id] ? `<span class="tag cmt" title="ひと言コメント ${CMN[g.id]}件">💬 コメント${CMN[g.id]}</span>` : "",
     ...g.gp.map(x => `<span class="tag gp${SEL.gp.has(x) ? " sel" : ""}">${esc(x)}${g.gx && g.gx[x] ? `<span class="gx">〜${+g.gx[x].slice(5,7)}/${+g.gx[x].slice(8,10)}</span>` : ""}</span>`),
     ...Object.entries(g.gn || {}).map(([x, d]) => `<span class="tag gp soon">${esc(x)}<span class="gn">${+d.slice(5,7)}/${+d.slice(8,10)}〜</span></span>`),
     g.pa ? `<span class="tag${SEL.pa ? " sel" : ""}">Play Anywhere</span>` : "",
@@ -568,7 +569,7 @@ function card(g){
     <button class="row" type="button" data-id="${g.id}" aria-expanded="${open}" aria-controls="detail-${g.id}">
       ${img}
       <span class="meta">
-        <span class="title">${isFav(g) ? `<span class="star" title="お気に入り">★</span>` : ""}${esc(g.t)}${CMN[g.id] ? `<span class="cmn" title="ひと言コメント">💬${CMN[g.id]}</span>` : ""}</span>
+        <span class="title">${isFav(g) ? `<span class="star" title="お気に入り">★</span>` : ""}${esc(g.t)}</span>
         <span class="pub">${esc(g.pub)}${g.cat ? " · " + esc(g.cat) : ""}</span>
         <span class="tags">${tags}</span>
       </span>
