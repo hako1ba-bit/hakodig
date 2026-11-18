@@ -883,14 +883,13 @@ $("#arrange").addEventListener("click", e => {
   e.currentTarget.textContent = on ? "並びの変更を終える" : "検索条件の並びを変える";
 });
 loadOrder(); refreshMoveButtons();
-// 一番上の項目だけ表示し、触ると全部ひらく
+// 一番上の項目だけ表示し、「すべての条件を表示」で全部ひらく
 const aside = $("#aside");
 function setExpanded(on){
   aside.classList.toggle("collapsed", !on);
   $("#unfold").setAttribute("aria-expanded", String(on));
 }
-aside.addEventListener("pointerdown", e => { if (!e.target.closest("#fold")) setExpanded(true); });
-aside.addEventListener("focusin", e => { if (!e.target.closest("#fold, #unfold")) setExpanded(true); });
+// 開くのは「すべての条件を表示」を押したときだけ（スマホで画面を動かそうと触れただけで開いてしまうのを防ぐ）
 $("#unfold").addEventListener("click", () => setExpanded(true));
 const wide = matchMedia("(min-width:821px)");  // PCは最初から全部ひらく（スマホはたたむ）
 if (wide.matches) setExpanded(true);
