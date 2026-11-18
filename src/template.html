@@ -294,7 +294,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
         <button class="qbtn" type="submit">検索</button>
       </form>
       <div class="arrange-bar">
-        <button class="arrange" id="arrange" type="button" aria-pressed="false">項目を並べ替え</button>
+        <button class="arrange" id="arrange" type="button" aria-pressed="false">検索条件の並びを変える</button>
       </div>
       <div class="secs" id="secs">
       <fieldset class="sec" data-sec="ja">
@@ -840,7 +840,7 @@ secs.addEventListener("click", e => {
 $("#arrange").addEventListener("click", e => {
   const on = $("#aside").classList.toggle("arranging");
   e.currentTarget.setAttribute("aria-pressed", String(on));
-  e.currentTarget.textContent = on ? "並べ替えを終える" : "項目を並べ替え";
+  e.currentTarget.textContent = on ? "並びの変更を終える" : "検索条件の並びを変える";
 });
 loadOrder(); refreshMoveButtons();
 // 一番上の項目だけ表示し、触ると全部ひらく
@@ -855,7 +855,7 @@ $("#unfold").addEventListener("click", () => setExpanded(true));
 $("#fold").addEventListener("click", () => {
   setExpanded(false);
   aside.classList.remove("arranging");
-  $("#arrange").setAttribute("aria-pressed","false"); $("#arrange").textContent = "項目を並べ替え";
+  $("#arrange").setAttribute("aria-pressed","false"); $("#arrange").textContent = "検索条件の並びを変える";
   $("#unfold").focus();
 });
 
