@@ -582,7 +582,7 @@ function pass(g){
   if (f.jaSub && !(g.lang && g.lang[2])) return false;
   if (f.pa && !g.pa) return false;
   if (f.sale && !(g.price && g.price.off > 0)) return false;
-  if (f.noFree && g.price && g.price.now === 0) return false;
+  if (f.noFree && pr !== "free" && g.price && g.price.now === 0) return false;  // 「無料」を選んだときは効かせない（ボタンも隠れる）
   if (f.hasCm && !CMN[g.id]) return false;
   if (f.leaving && !leaveDate(g)) return false;
   if (f.coming && !(g.gn && Object.keys(g.gn).length)) return false;
@@ -729,7 +729,8 @@ function render(){
   document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === v)));
   $("#sort option[value=date]").textContent = v === "sale" ? "セール開始が新しい順" : v === "demo" ? "配信日順" : "発売日順";
   const se = $("#sort option[value=saleEnd]"); se.hidden = se.disabled = v !== "sale";
-  $("#f-sale").closest("label").hidden = v === "sale";  // セール中タブでは押しても変わらないので隠す（検索中は全作品が対象なので出す）
+  $("#f-sale").closest("label").hidden = v === "sale";
+  $("#f-nofree").closest("label").hidden = $("#f-pr-free").checked;  // 価格「無料」を選んでいるときは押すと0件になるだけなので隠す  // セール中タブでは押しても変わらないので隠す（検索中は全作品が対象なので出す）
   if (v !== "sale" && $("#sort").value === "saleEnd") $("#sort").value = "date";
   // ゲームパス関係の並び順は、ゲームパスのプラン（Essential〜PC Game Pass）を選んだときだけ使える
   const gpSel = [...SEL.gp].some(x => x !== "EA Play" && x !== "Ubisoft+");
