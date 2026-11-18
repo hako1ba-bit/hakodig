@@ -64,6 +64,8 @@ jobs:
           echo "slot=$slot" >> "$GITHUB_OUTPUT"
           done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('${slot}_at',''))")
           skip=0
+          # 0〜3時台に遅れて動いた定時の回は何もしない（朝の回は 4時以降に動かす。深夜に「朝の分」を済ませてしまい、4時からの朝の回が飛ばされるのを防ぐ）
+          if [ "$sched" = "yes" ] && [ "$hour" -lt 4 ]; then skip=1; fi
           if [ "$sched" = "yes" ] && [ "$done" = "$today" ]; then skip=1; fi
           if [ "$skip" = "1" ]; then echo "この回の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"; else echo "go=yes" >> "$GITHUB_OUTPUT"; fi
   update:
