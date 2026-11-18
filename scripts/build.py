@@ -200,9 +200,20 @@ for s, m in desc.items():
     with open(os.path.join(OUT, "d", s + ".json"), "w", encoding="utf-8") as f:
         f.write(dump(m))
 
+# 大型セール：名前つき（data/big_sales.json）＋同じ終了日が400本以上のまとまり
+from collections import Counter
+ends = Counter(g["pr"][3] for g in games if g.get("pr") and g["pr"][2] and g["pr"][3] and not g.get("dm"))
+big, used = [], set()
+for b in load_json("big_sales.json", {}).get("sales", []):
+    if sum(ends[e] for e in b["ends"]) >= 50:
+        big.append({"n": b["name"], "e": b["ends"]}); used.update(b["ends"])
+for e, n in ends.most_common():
+    if n >= 400 and e not in used:
+        big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})
+
 t = open(os.path.join(ROOT, "src", "template.html"), encoding="utf-8").read()
 t = (t.replace("__DATA__", dump(first)).replace("__ALIASES__", dump(aliases)).replace("__PUBS__", dump(load_json("publishers.json", [])))
-      .replace("__UPDATES__", json.dumps(load_json("changelog.json", [])[:10], ensure_ascii=False, separators=(",", ":"))).replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T))
+      .replace("__UPDATES__", json.dumps(load_json("changelog.json", [])[:10], ensure_ascii=False, separators=(",", ":"))).replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T).replace("__BIG__", dump(big)))
 page = ('<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
         '<meta name="description" content="Xbox日本ストアのゲームを、日本語対応・ゲームパス・価格で探せる非公式の検索サポート。by ハコイチバ">\n'

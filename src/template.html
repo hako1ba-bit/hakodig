@@ -45,6 +45,16 @@ legend{font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom
 .opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 .reset{font:inherit;font-size:12px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 10px;cursor:pointer;align-self:flex-start}
 .note{font-size:11.5px;color:var(--muted);margin:0}
+.bigsale{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:12px 16px;border:1px solid var(--accent);border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;text-align:left;cursor:pointer;box-shadow:0 0 20px var(--glow)}
+.bigsale .bs-tag{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--accent);background:var(--accent-ink);border-radius:6px;padding:2px 7px;flex:none}
+.bigsale .bs-name{font-weight:700;font-size:15px;min-width:0}
+.bigsale .bs-meta{margin-left:auto;font-size:12.5px;white-space:nowrap;font-family:var(--f-mono)}
+.bigsale .bs-go{font-weight:700;white-space:nowrap;font-size:13px}
+.bigsale.on{background:var(--accent-soft);color:var(--ink);box-shadow:0 0 14px var(--glow)}
+.bigsale.on .bs-tag{background:var(--accent);color:var(--accent-ink)}
+.bigsale.on .bs-meta{color:var(--muted)}.bigsale.on .bs-go{color:var(--accent)}
+.bs-top{display:none}
+@media (max-width:820px){.bs-top{display:block;margin-top:14px}.bs-main{display:none}.bigsale{flex-wrap:wrap;row-gap:6px}.bigsale .bs-name{flex:1 1 60%}.bigsale .bs-meta{margin-left:0;flex:1}}
 .opts-sep{border-top:1px dashed var(--line);padding-top:10px;margin-top:2px}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
 .count{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
@@ -277,6 +287,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
     <div class="upd" id="upd" hidden></div>
   </header>
 
+  <div class="bigsales bs-top" id="bs-top" hidden></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-released" data-tab="released" aria-selected="true">発売中<span class="n" id="n-released"></span></button>
     <button class="tab" role="tab" id="tab-upcoming" data-tab="upcoming" aria-selected="false">発売予定<span class="n" id="n-upcoming"></span></button>
@@ -375,6 +386,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
         </button>
         <div class="cfeed-body" id="cfeed-body" hidden></div>
       </section>
+      <div class="bigsales bs-main" id="bs-main" hidden></div>
       <div class="bar">
         <span class="count" id="count"></span>
         <label class="sort"><span>表示件数</span>
@@ -427,6 +439,8 @@ const ME = {user: null, favs: new Set(), hides: new Set(), snaps: {}};
 let NOTICE = [];
 const CM = {}, CMN = {}, CMT = {}, DRAFT = {};
 const TODAY = "__TODAY__";
+const BIGS = __BIG__;  // 大型セール [{n:名前, e:[終了日 MM/DD/YYYY]}]
+let BIG = null;        // 選んでいる大型セール
 
 // 機種違いの版（Windows / Xbox Series / Xbox One / PC）を1件にまとめる
 const SUFFIX = /\s*[\(（]\s*(Windows|PC|Xbox One|Xbox Series(?: X\|S| XS| X\/S)?)\s*[\)）]\s*$/i;
@@ -689,6 +703,7 @@ function inTab(g){
   if (v === "hid") return isHidden(g);
   if (isHidden(g)) return false;
   if (v === "fav") return isFav(g);
+  if (BIG && !(onSale(g) && BIG.e.includes(g.price.end))) return false;  // 大型セールを選んでいるとき
   if (v === "all") return true;
   if (v === "demo") return !!g.dm;
   if (g.dm) return false;
@@ -719,6 +734,25 @@ function renderPager(pages, total){
 function refresh(){ page = 1; render(); }
 // 絞り込みで選んでいる条件（カードのタグを光らせる）
 let SEL = {gp: new Set(), pl: new Set(), pa: false};
+// 大型セールのボタン（スマホはタブの上、PCはセール中タブの一覧の上）
+let BIGN = [], BIGD = null;  // 本数（全データを読み込んだら数え直す）
+function renderBig(v){
+  if (BIGD !== DATA){ BIGD = DATA; BIGN = BIGS.map(b => DATA.filter(g => onSale(g) && !g.dm && b.e.includes(g.price.end)).length); }
+  const html = BIGS.map((b, i) => {
+    const on = BIG === b, end = b.e.map(e => `${+e.slice(0,2)}/${+e.slice(3,5)}`).sort().pop();
+    return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">大型セール</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">〜${end} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
+  }).join("");
+  $("#bs-top").innerHTML = $("#bs-main").innerHTML = html;
+  $("#bs-top").hidden = !BIGS.length;
+  $("#bs-main").hidden = !BIGS.length || !(v === "sale" || BIG);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".bigsale"); if (!b) return;
+  const s = BIGS[+b.dataset.big];
+  if (BIG === s) BIG = null; else { BIG = s; tab = "sale"; $("#q").value = ""; lastQ = ""; }
+  page = 1; refresh();
+  if (BIG && b.closest("#bs-top")) document.querySelector(".tabs").scrollIntoView({behavior: "smooth"});  // スマホ：一覧のほうへ
+});
 let SORT_KEY = "";  // 並び順の選択肢を最後に作ったときの中身
 function render(){
   SEL = {gp: new Set([...document.querySelectorAll("input[data-gp]:checked")].map(i => i.dataset.gp)),
@@ -742,6 +776,7 @@ function render(){
     $("#sort").value = groups.some(([, os]) => os.some(([k]) => k === cur)) ? cur : "date";
     SORT_KEY = sortKey;
   }
+  renderBig(v);
   const sort = $("#sort").value;
   const pool = DATA.filter(inTab);
   const endKey = g => { const e = g.price && g.price.end; if (!e) return "9999-99-99"; const [m,d,y] = e.split("/"); return `${y}-${m}-${d}`; };
@@ -772,7 +807,7 @@ function render(){
   $("#tab-fav").hidden = v !== "fav"; $("#tab-hid").hidden = v !== "hid";
   const loading = !FULL && (v !== "upcoming")
     ? `<p class="loading">過去の作品を読み込み中です。まもなく全件が表示されます。</p>` : "";
-  $("#count").textContent = `${rows.length} 件 / ${pool.length} 件中` + ($("#q").value.trim() ? "（全ゲームから検索）" : "");
+  $("#count").textContent = `${rows.length} 件 / ${pool.length} 件中` + ($("#q").value.trim() ? (BIG ? `（${BIG.n}から検索）` : "（全ゲームから検索）") : "");
   if (!rows.length){ $("#list").innerHTML = loading + `<div class="empty">${v === "fav" ? "お気に入りはまだありません。作品を開いて「☆ お気に入り」を押すと、ここに集まります。" : v === "hid" ? "非表示にした作品はありません。" : "条件に合う作品がありません。条件を減らしてみてください。"}</div>`; $("#pager").innerHTML = ""; return; }
   const pages = Math.max(1, Math.ceil(rows.length / per));
   if (page > pages) page = pages;
@@ -862,7 +897,7 @@ $("#fold").addEventListener("click", () => {
 });
 
 document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
-  tab = b.dataset.tab;
+  tab = b.dataset.tab; BIG = null;
   $("#q").value = ""; lastQ = "";
   refresh();
 }));
@@ -1322,7 +1357,7 @@ function openGame(id){
 $("#home").addEventListener("click", e => {
   e.preventDefault();
   $("#reset").click();
-  tab = "released"; OPEN.clear(); page = 1;
+  tab = "released"; BIG = null; OPEN.clear(); page = 1;
   refresh();
   window.scrollTo({top: 0, behavior: "smooth"});
 });
