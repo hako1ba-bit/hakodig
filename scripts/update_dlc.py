@@ -38,9 +38,8 @@ def addons(gid, sub):
         for p in ps:
             pr = ((p.get("specificPrices") or {}).get("purchaseable") or [{}])[0]
             off = round(pr.get("discountPercentage") or 0)
-            end = (pr.get("endDateUtc") or "").split(" ")[0] if off else ""
-            items.append([p["productId"], p.get("title") or "", pr.get("listPrice"), pr.get("msrp"), off,
-                          "" if end.startswith("12/30/9998") else end])
+            end = sale_end(pr.get("endDateUtc") or "") if off else ""  # 日本時間の日付
+            items.append([p["productId"], p.get("title") or "", pr.get("listPrice"), pr.get("msrp"), off, end])
             c = contents(p.get("description"))
             if c:
                 sub[p["productId"]] = c  # このDLC（シーズンパス等）に含まれるもの

@@ -166,3 +166,13 @@ def save_json(name, obj):
     with open(os.path.join(DATA, name), "w", encoding="utf-8") as f:
         json.dump(obj, f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write("\n")
+
+
+def sale_end(s):
+    """ストアのセール終了日時（UTC, 例 "11/17/2026 23:59:59"）を日本時間の日付 "MM/DD/YYYY" にする。期限なし（9998年）は空"""
+    if not s or s.startswith("12/30/9998"):
+        return ""
+    try:
+        return (datetime.datetime.strptime(s, "%m/%d/%Y %H:%M:%S") + datetime.timedelta(hours=9)).strftime("%m/%d/%Y")
+    except ValueError:
+        return s.split(" ")[0]

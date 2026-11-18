@@ -16,7 +16,7 @@ def compact(p):
     if ps:
         b = min(ps, key=lambda c: c.get("listPrice", 0))
         end = b.get("endDateUtc") or ""
-        end = end.split(" ")[0] if b.get("discountPercentage", 0) > 0 and not end.startswith("12/30/9998") else ""
+        end = sale_end(end) if b.get("discountPercentage", 0) > 0 else ""  # 日本時間の日付
         pr = [b.get("listPrice"), b.get("msrp"), round(b.get("discountPercentage", 0)), end]
     imgs = p.get("images") or {}
     img = (imgs.get("poster") or imgs.get("boxArt") or {}).get("url") or None
