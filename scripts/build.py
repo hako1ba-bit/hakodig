@@ -203,10 +203,15 @@ for s, m in desc.items():
 # 大型セール：名前つき（data/big_sales.json）＋同じ終了日が400本以上のまとまり
 from collections import Counter
 ends = Counter(g["pr"][3] for g in games if g.get("pr") and g["pr"][2] and g["pr"][3] and not g.get("dm"))
+def in_big(g, b):  # 終了日が ends のどれか、かつ開始日（ハコディグが見つけた日）が since〜until
+    ss = g.get("ss") or "0000"
+    return (g.get("pr") and g["pr"][2] and not g.get("dm") and g["pr"][3] in b["ends"]
+            and ss >= b.get("since", "0000") and ss <= b.get("until", "9999"))
 big, used = [], set()
 for b in load_json("big_sales.json", {}).get("sales", []):
-    if sum(ends[e] for e in b["ends"]) >= 50:
-        big.append({"n": b["name"], "e": b["ends"]}); used.update(b["ends"])
+    if sum(1 for g in games if in_big(g, b)) >= 50:
+        big.append({"n": b["name"], "e": b["ends"], **{k: b[x] for k, x in (("p", "period"), ("f", "from"), ("s", "since"), ("u", "until")) if b.get(x)}})
+        used.update(b["ends"])
 for e, n in ends.most_common():
     if n >= 400 and e not in used:
         big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})

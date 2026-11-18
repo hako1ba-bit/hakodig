@@ -703,7 +703,7 @@ function inTab(g){
   if (v === "hid") return isHidden(g);
   if (isHidden(g)) return false;
   if (v === "fav") return isFav(g);
-  if (BIG && !(onSale(g) && BIG.e.includes(g.price.end))) return false;  // 大型セールを選んでいるとき
+  if (BIG && !inBig(g, BIG)) return false;  // 大型セールを選んでいるとき
   if (v === "all") return true;
   if (v === "demo") return !!g.dm;
   if (g.dm) return false;
@@ -735,20 +735,22 @@ function refresh(){ page = 1; render(); }
 // 絞り込みで選んでいる条件（カードのタグを光らせる）
 let SEL = {gp: new Set(), pl: new Set(), pa: false};
 // 大型セールのボタン（スマホはタブの上、PCはセール中タブの一覧の上）
+function inBig(g, b){ return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000") >= (b.s || "0000") && (g.ss || "0000") <= (b.u || "9999"); }
 let BIGN = [], BIGD = null;  // 本数（全データを読み込んだら数え直す）
+const BIGV = BIGS.filter(b => !b.f || Date.now() >= Date.parse(b.f));  // 開始時刻（from）より前は出さない
 function renderBig(v){
-  if (BIGD !== DATA){ BIGD = DATA; BIGN = BIGS.map(b => DATA.filter(g => onSale(g) && !g.dm && b.e.includes(g.price.end)).length); }
-  const html = BIGS.map((b, i) => {
+  if (BIGD !== DATA){ BIGD = DATA; BIGN = BIGV.map(b => DATA.filter(g => inBig(g, b)).length); }
+  const html = BIGV.map((b, i) => {
     const on = BIG === b, end = b.e.map(e => `${+e.slice(0,2)}/${+e.slice(3,5)}`).sort().pop();
-    return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">大型セール</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">〜${end} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
+    return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">大型セール</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">${esc(b.p || "〜" + end)} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
   }).join("");
   $("#bs-top").innerHTML = $("#bs-main").innerHTML = html;
-  $("#bs-top").hidden = !BIGS.length;
-  $("#bs-main").hidden = !BIGS.length || !(v === "sale" || BIG);
+  $("#bs-top").hidden = !BIGV.length;
+  $("#bs-main").hidden = !BIGV.length || !(v === "sale" || BIG);
 }
 document.addEventListener("click", e => {
   const b = e.target.closest(".bigsale"); if (!b) return;
-  const s = BIGS[+b.dataset.big];
+  const s = BIGV[+b.dataset.big];
   if (BIG === s) BIG = null; else { BIG = s; tab = "sale"; $("#q").value = ""; lastQ = ""; }
   page = 1; refresh();
   if (BIG && b.closest("#bs-top")) document.querySelector(".tabs").scrollIntoView({behavior: "smooth"});  // スマホ：一覧のほうへ
