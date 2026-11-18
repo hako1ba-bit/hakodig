@@ -748,7 +748,7 @@ function render(){
   const byEnd = (a,b) => endKey(a).localeCompare(endKey(b)) || (b.price.off - a.price.off);
   const byDate = (a,b) => v === "sale" ? (b.ss || "").localeCompare(a.ss || "") || (b.price.off - a.price.off)
     : v === "upcoming" ? (a.d||"9999").localeCompare(b.d||"9999")
-    : (b.d||"0000").localeCompare(a.d||"0000");
+    : (b.d||"0000").localeCompare(a.d||"0000") || (!a.d && !b.d ? released(b) - released(a) : 0);  // 日付なしは「記載なし（発売済み）」→「未定」の順
   const pv = (g, none) => g.price ? g.price.now : none;
   if (sort === "priceAsc") pool.sort((a,b) => pv(a, Infinity) - pv(b, Infinity) || byDate(a,b));
   else if (sort === "priceDesc") pool.sort((a,b) => pv(b, -1) - pv(a, -1) || byDate(a,b));
@@ -782,12 +782,12 @@ function render(){
   for (const g of shown){
     const saleEnd = v === "sale" && sort === "saleEnd";
     if ((sort === "date" || saleEnd) && !byRel){
-      const key = saleEnd ? endKey(g) : v === "sale" ? (g.ss || "0000") : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : "未定");
+      const key = saleEnd ? endKey(g) : v === "sale" ? (g.ss || "0000") : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : released(g) ? "記載なし" : "未定");
       if (key !== last){
         const label = saleEnd
           ? (key.startsWith("9999") ? "終了日の記載なし" : `${+key.slice(5,7)}/${+key.slice(8,10)} までのセール`)
           : v === "sale" ? (key === "0000" ? "それより前から続いているセール" : key === TODAY ? "今日からのセール" : `${+key.slice(5,7)}/${+key.slice(8,10)} からのセール`)
-          : key === "未定" ? "発売日未定" : (v === "released" || v === "demo" ? fmtDate(key) : key.replace("-", "年") + "月");
+          : key === "未定" ? "発売日未定" : key === "記載なし" ? "発売日の記載なし" : (v === "released" || v === "demo" ? fmtDate(key) : key.replace("-", "年") + "月");
         html += `<div class="day">${label}</div>`; last = key;
       }
     }
