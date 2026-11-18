@@ -1,7 +1,8 @@
 # 毎日2回、ストアの情報を取り直してサイトを更新する
 # - 朝 4:17（日本時間）: 一覧・価格・セール・ゲームパス＋日本語情報の確認（重い処理）
 # - 夕方 16:32: 一覧・価格・セール・ゲームパス＋新作の日本語情報だけ（軽い処理。16時ごろ始まるセールや配信を当日中に拾う）
-# GitHubの定時実行は飛ばされることがあるので、朝は 5:47・7:17、夕方は 17:47 にも予備で起動する。
+# 起動は Cloudflare の Cron（時刻が正確）から合図する（worker/index.js の scheduled）。
+# GitHubの定時実行も予備として残す（遅れたり飛ばされたりするため。朝は 5:47・7:17、夕方は 17:47 にも予備）。
 # 予備の回は、その回の更新が済んでいれば何もせず終わる。
 # 定時実行は数時間遅れることもあるので、朝の回か夕方の回かは「実際に動いた時刻」（16時より前なら朝）で決める。
 name: 毎日の更新
@@ -19,6 +20,9 @@ on:
         default: "300"
       skip_list:
         description: 一覧の取得を省く（続きの取得だけ行う）
+        default: "no"
+      scheduled:
+        description: 定時の起動（Cloudflareから。済んでいれば何もしない）
         default: "no"
   push:
     branches: [main]
@@ -51,13 +55,16 @@ jobs:
           # 朝の回か夕方の回かは、実際に動いた時刻（日本時間）で決める（GitHubの定時実行は大きく遅れることがあるため）
           # 16時より前は朝の回（遅れて動いた朝の予備の回が「夕方」と扱われ、本来の夕方の回が飛ばされるのを防ぐ）
           if [ "$hour" -lt 16 ]; then slot=morning; eve=0; else slot=evening; eve=1; fi
+          # 定時の起動：GitHubの定時実行、またはCloudflareからの合図（scheduled=yes）
+          sched=no
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.scheduled }}" = "yes" ]; then sched=yes; fi
           # 手動で起動したときは、指定した内容（詳細の取得時間など）をそのまま使う
-          if [ "${{ github.event_name }}" != "schedule" ]; then eve=0; fi
+          if [ "$sched" != "yes" ]; then eve=0; fi
           echo "eve=$eve" >> "$GITHUB_OUTPUT"
           echo "slot=$slot" >> "$GITHUB_OUTPUT"
           done=$(python3 -c "import json;print(json.load(open('data/meta.json')).get('${slot}_at',''))")
           skip=0
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$done" = "$today" ]; then skip=1; fi
+          if [ "$sched" = "yes" ] && [ "$done" = "$today" ]; then skip=1; fi
           if [ "$skip" = "1" ]; then echo "この回の更新は済んでいるので終了"; echo "go=no" >> "$GITHUB_OUTPUT"; else echo "go=yes" >> "$GITHUB_OUTPUT"; fi
   update:
     needs: check

@@ -20,6 +20,18 @@ const fold = x => x.normalize("NFKC").toLowerCase().replace(/[\u3041-\u3096]/g, 
 const reserved = nick => RESERVED.some(r => fold(nick).includes(fold(r)));
 
 export default {
+  // 毎日の更新を正確な時刻に起動する（GitHubの定時実行は数時間遅れることがあるため）。
+  // 朝 4:17・夕方 16:32（日本時間）に GitHub へ「更新を始めて」と合図するだけ。済んでいれば GitHub 側で何もせず終わる
+  async scheduled(event, env, ctx) {
+    if (!env.GH_DISPATCH) return;
+    const r = await fetch("https://api.github.com/repos/hako1ba-bit/hakodig/actions/workflows/update.yml/dispatches", {
+      method: "POST",
+      headers: { "authorization": `Bearer ${env.GH_DISPATCH}`, "accept": "application/vnd.github+json",
+                 "user-agent": "hakodig-cron", "x-github-api-version": "2022-11-28" },
+      body: JSON.stringify({ ref: "main", inputs: { scheduled: "yes" } }),
+    });
+    if (!r.ok) console.log("dispatch failed", r.status);
+  },
   async fetch(req, env) {
     const url = new URL(req.url);
     const p = url.pathname;
