@@ -30,6 +30,7 @@ h1{font-family:var(--f-logo);font-weight:400;font-size:clamp(45px,9vw,63px);line
 .layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;margin-top:16px;align-items:start}
 @media (max-width:820px){.layout{grid-template-columns:minmax(0,1fr)}}
 aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:16px}
+@media (min-width:821px){aside{max-height:calc(100vh - 24px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain}#fold,#unfold{display:none!important}}  /* PC：条件は開いたまま、長いときは枠の中でスクロール */
 @media (max-width:820px){aside{position:static}}
 .qrow{display:flex;gap:6px;margin:0}
 .qbtn{font:inherit;font-weight:700;font-size:13px;padding:0 14px;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);cursor:pointer;flex:none}
@@ -891,6 +892,9 @@ function setExpanded(on){
 aside.addEventListener("pointerdown", e => { if (!e.target.closest("#fold")) setExpanded(true); });
 aside.addEventListener("focusin", e => { if (!e.target.closest("#fold, #unfold")) setExpanded(true); });
 $("#unfold").addEventListener("click", () => setExpanded(true));
+const wide = matchMedia("(min-width:821px)");  // PCは最初から全部ひらく（スマホはたたむ）
+if (wide.matches) setExpanded(true);
+wide.addEventListener("change", e => setExpanded(e.matches));
 $("#fold").addEventListener("click", () => {
   setExpanded(false);
   aside.classList.remove("arranging");
