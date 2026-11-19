@@ -56,6 +56,9 @@ legend{font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom
 .bigsale.on .bs-meta{color:var(--muted)}.bigsale.on .bs-go{color:var(--accent)}
 .bs-top{display:none}
 @media (max-width:820px){.bs-top{display:block;margin-top:14px}.bs-main{display:none}.bigsale{flex-wrap:wrap;row-gap:6px}.bigsale .bs-name{flex:1 1 60%}.bigsale .bs-meta{margin-left:0;flex:1}}
+.favonly{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:13px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.favonly .st{color:var(--accent)}
+.favonly.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}.favonly.on .st{color:var(--accent-ink)}
 .opts-sep{border-top:1px dashed var(--line);padding-top:10px;margin-top:2px}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
 .count{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
@@ -390,6 +393,7 @@ footer{margin-top:32px;font-size:11px;line-height:1.7;color:var(--muted);border-
       <div class="bigsales bs-main" id="bs-main" hidden></div>
       <div class="bar">
         <span class="count" id="count"></span>
+        <button type="button" class="favonly" id="favonly" aria-pressed="false" hidden><span class="st">★</span> お気に入りのみ</button>
         <label class="sort"><span>表示件数</span>
           <select id="per">
             <option value="10">10件</option>
@@ -442,6 +446,7 @@ const CM = {}, CMN = {}, CMT = {}, DRAFT = {};
 const TODAY = "__TODAY__";
 const BIGS = __BIG__;  // 大型セール [{n:名前, e:[終了日 MM/DD/YYYY]}]
 let BIG = null;        // 選んでいる大型セール
+let FAVONLY = false;   // 「★ お気に入りのみ」（ログイン中だけ）
 
 // 機種違いの版（Windows / Xbox Series / Xbox One / PC）を1件にまとめる
 const SUFFIX = /\s*[\(（]\s*(Windows|PC|Xbox One|Xbox Series(?: X\|S| XS| X\/S)?)\s*[\)）]\s*$/i;
@@ -704,6 +709,7 @@ function inTab(g){
   if (v === "hid") return isHidden(g);
   if (isHidden(g)) return false;
   if (v === "fav") return isFav(g);
+  if (FAVONLY && ME.user && !isFav(g)) return false;  // 「★ お気に入りのみ」
   if (BIG && !inBig(g, BIG)) return false;  // 大型セールを選んでいるとき
   if (v === "all") return true;
   if (v === "demo") return !!g.dm;
@@ -756,6 +762,7 @@ document.addEventListener("click", e => {
   page = 1; refresh();
   if (BIG && b.closest("#bs-top")) document.querySelector(".tabs").scrollIntoView({behavior: "smooth"});  // スマホ：一覧のほうへ
 });
+$("#favonly").addEventListener("click", () => { FAVONLY = !FAVONLY; page = 1; refresh(); });
 let SORT_KEY = "";  // 並び順の選択肢を最後に作ったときの中身
 function render(){
   SEL = {gp: new Set([...document.querySelectorAll("input[data-gp]:checked")].map(i => i.dataset.gp)),
@@ -808,6 +815,8 @@ function render(){
   const rows = pool.filter(pass);
   $("#tab-all").hidden = v !== "all";
   $("#tab-fav").hidden = v !== "fav"; $("#tab-hid").hidden = v !== "hid";
+  const fo = $("#favonly"); fo.hidden = !ME.user || v === "fav" || v === "hid";
+  fo.classList.toggle("on", FAVONLY && !fo.hidden); fo.setAttribute("aria-pressed", FAVONLY && !fo.hidden);
   const loading = !FULL && (v !== "upcoming")
     ? `<p class="loading">過去の作品を読み込み中です。まもなく全件が表示されます。</p>` : "";
   $("#count").textContent = `${rows.length} 件 / ${pool.length} 件中` + ($("#q").value.trim() ? (BIG ? `（${BIG.n}から検索）` : "（全ゲームから検索）") : "");
@@ -1362,7 +1371,7 @@ function openGame(id){
 $("#home").addEventListener("click", e => {
   e.preventDefault();
   $("#reset").click();
-  tab = "released"; BIG = null; OPEN.clear(); page = 1;
+  tab = "released"; BIG = null; FAVONLY = false; OPEN.clear(); page = 1;
   refresh();
   window.scrollTo({top: 0, behavior: "smooth"});
 });
