@@ -778,7 +778,8 @@ function render(){
     ["発売日・価格", [["date", v === "sale" ? "セール開始が新しい順" : v === "demo" ? "配信日順" : "発売日順"], ["priceAsc", "価格の安い順"], ["priceDesc", "価格の高い順"]]],
     ["セール", [["discount", "割引率の高い順"], ...(v === "sale" ? [["saleEnd", "セール終了が近い順"]] : [])]],
     ...(gpSel ? [["ゲームパス", [["gpNew", "ゲームパス新着順"], ["leaving", "ゲームパス終了が近い順"]]]] : []),
-    ["コメント", [["cmNew", "コメントが新しい順"]]]];
+    ["コメント", [["cmNew", "コメントが新しい順"]]],
+    ...(ME.user && (v === "fav" || FAVONLY) ? [["お気に入り", [["favNew", "お気に入りに追加した順"]]]] : [])];
   const sortKey = JSON.stringify(groups);
   if (sortKey !== SORT_KEY){
     const cur = $("#sort").value;
@@ -798,6 +799,11 @@ function render(){
   if (sort === "priceAsc") pool.sort((a,b) => pv(a, Infinity) - pv(b, Infinity) || byDate(a,b));
   else if (sort === "priceDesc") pool.sort((a,b) => pv(b, -1) - pv(a, -1) || byDate(a,b));
   else if (sort === "discount") pool.sort((a,b) => ((b.price && b.price.off) || 0) - ((a.price && a.price.off) || 0) || byDate(a,b));
+  else if (sort === "favNew"){  // お気に入りに追加した新しい順（ME.favs は追加した順に並んでいる）
+    const fi = new Map([...ME.favs].map((id, i) => [id, i]));
+    const r = g => Math.max(-1, ...g.versions.map(x => fi.has(x.id) ? fi.get(x.id) : -1));
+    pool.sort((a,b) => r(b) - r(a) || byDate(a,b));
+  }
   else if (sort === "cmNew") pool.sort((a,b) => (CMT[b.id] || "").localeCompare(CMT[a.id] || "") || byDate(a,b));
   else if (sort === "saleEnd") pool.sort(byEnd);
   else if (sort === "gpNew") pool.sort((a,b) => (b.ge || "").localeCompare(a.ge || "") || byDate(a,b));
@@ -1078,7 +1084,9 @@ $("#acct").addEventListener("click", async e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   $("#menu").hidden = true;
   const a = b.dataset.act;
-  if (a === "fav" || a === "hid"){ tab = a; $("#q").value = ""; lastQ = ""; refresh(); document.querySelector(".tabs").scrollIntoView({behavior: "smooth"}); }
+  if (a === "fav" || a === "hid"){ tab = a; $("#q").value = ""; lastQ = ""; refresh();
+    if (a === "fav"){ $("#sort").value = "favNew"; page = 1; refresh(); }  // お気に入りは追加した新しい順で開く
+    document.querySelector(".tabs").scrollIntoView({behavior: "smooth"}); }
   else if (a === "nick") nickDlg(false);
   else if (a === "notice") noticeDlg();
   else if (a === "nlog") noticeLogDlg();

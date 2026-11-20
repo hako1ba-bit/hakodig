@@ -223,7 +223,7 @@ async function api(req, env, url) {
 
   if (p === "/api/state" && m === "GET") {
     const [f, h, pr] = await env.DB.batch([
-      env.DB.prepare("SELECT game_id, snap FROM favs WHERE user_id = ?").bind(me.id),
+      env.DB.prepare("SELECT game_id, snap FROM favs WHERE user_id = ? ORDER BY created_at").bind(me.id),
       env.DB.prepare("SELECT k FROM hides WHERE user_id = ?").bind(me.id),
       env.DB.prepare("SELECT data FROM prefs WHERE user_id = ?").bind(me.id),
     ]);
