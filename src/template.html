@@ -578,7 +578,7 @@ function rel1(t, q){
   return t.includes(q) ? 3 : 9;
 }
 function relevance(g, q){
-  let r = Math.min(rel1(normT(g), q), rel1(normE(g), q), looseQ(q) && g.k ? Math.max(2, rel1(looseK(g), looseQ(q))) : 9);
+  let r = Math.min(rel1(normT(g), q), rel1(normE(g), q), looseQ(q) && g.k ? Math.max(1, rel1(looseK(g), looseQ(q))) : 9);  // カタカナ読みで前方一致したら、英語名の前方一致と同じ扱い（トロピコ→Tropico 7 も発売日順に）
   if (r > 2 && hitAlt(g, q)) r = 2;
   return r < 9 ? r : 4;
 }
