@@ -54,8 +54,8 @@ legend{font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom
 .bigsale.on{background:var(--accent-soft);color:var(--ink);box-shadow:0 0 14px var(--glow)}
 .bigsale.on .bs-tag{background:var(--accent);color:var(--accent-ink)}
 .bigsale.on .bs-meta{color:var(--muted)}.bigsale.on .bs-go{color:var(--accent)}
-.bs-top{display:none}
-@media (max-width:820px){.bs-top{display:block;margin-top:14px}.bs-main{display:none}.bigsale{flex-wrap:wrap;row-gap:6px}.bigsale .bs-name{flex:1 1 60%}.bigsale .bs-meta{margin-left:0;flex:1}}
+.bs-top{display:block;margin-top:14px}.bs-main{display:none!important}  /* 大型セールはスマホ・PCともタブの上（どのタブでも見える） */
+@media (max-width:820px){.bigsale{flex-wrap:wrap;row-gap:6px}.bigsale .bs-name{flex:1 1 60%}.bigsale .bs-meta{margin-left:0;flex:1}}
 .favonly{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:13px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .favonly .st{color:var(--accent)}
 .favonly.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}.favonly.on .st{color:var(--accent-ink)}
@@ -741,7 +741,7 @@ function renderPager(pages, total){
 function refresh(){ page = 1; render(); }
 // 絞り込みで選んでいる条件（カードのタグを光らせる）
 let SEL = {gp: new Set(), pl: new Set(), pa: false};
-// 大型セールのボタン（スマホはタブの上、PCはセール中タブの一覧の上）
+// 大型セールのボタン（スマホ・PCともタブの上。押すとセール中タブでそのセールだけ）
 function inBig(g, b){ return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000") >= (b.s || "0000") && (g.ss || "0000") <= (b.u || "9999"); }
 let BIGN = [], BIGD = null;  // 本数（全データを読み込んだら数え直す）
 const BIGV = BIGS.filter(b => !b.f || Date.now() >= Date.parse(b.f));  // 開始時刻（from）より前は出さない
