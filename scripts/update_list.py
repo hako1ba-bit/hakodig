@@ -152,6 +152,14 @@ for i, r in fresh.items():
         ss[i] = T
 save_json("sale_start.json", dict(sorted(ss.items())))
 
+# 5c. ハコディグに初めて載った日時（同じ発売日の作品は、あとから載ったものを上に並べるため）。14日たったら消す（最初に読むデータを増やしすぎない）
+now_jst = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
+fs = {i: t for i, t in load_json("first_seen.json", {}).items() if i in fresh and t[:10] >= today(-14)}
+for i in fresh:
+    if i not in cat and i not in fs:
+        fs[i] = now_jst
+save_json("first_seen.json", dict(sorted(fs.items())))
+
 # 6. 価格の記録（ハコサーチの記録上の最安値）
 for i, r in fresh.items():
     pr = r.get("pr")

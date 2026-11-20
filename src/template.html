@@ -487,6 +487,7 @@ function group(RAW){
       if (!x.lo && g.lo) x.lo = g.lo;
       if (g.gx) x.gx = Object.assign({}, x.gx, g.gx);
       if (g.ss && (!x.ss || g.ss > x.ss)) x.ss = g.ss;
+      if (g.fs && (!x.fs || g.fs < x.fs)) x.fs = g.fs;  // 初めて載った日時（版のうち一番早いもの）
       if (g.ge && (!x.ge || g.ge > x.ge)) x.ge = g.ge;
       if (g.gn) x.gn = Object.assign({}, x.gn, g.gn);
       if (!x.img && g.img) x.img = g.img;
@@ -796,7 +797,8 @@ function render(){
   const byEnd = (a,b) => endKey(a).localeCompare(endKey(b)) || (b.price.off - a.price.off);
   const byDate = (a,b) => v === "sale" ? (b.ss || "").localeCompare(a.ss || "") || (b.price.off - a.price.off)
     : v === "upcoming" ? (a.d||"9999").localeCompare(b.d||"9999")
-    : (b.d||"0000").localeCompare(a.d||"0000") || (!a.d && !b.d ? released(b) - released(a) : 0);  // 日付なしは「記載なし（発売済み）」→「未定」の順
+    : (b.d||"0000").localeCompare(a.d||"0000") || (!a.d && !b.d ? released(b) - released(a) : 0)  // 日付なしは「記載なし（発売済み）」→「未定」の順
+      || (b.fs || "").localeCompare(a.fs || "");  // 同じ日付なら、あとからハコディグに載ったものを上に
   const pv = (g, none) => g.price ? g.price.now : none;
   if (sort === "priceAsc") pool.sort((a,b) => pv(a, Infinity) - pv(b, Infinity) || byDate(a,b));
   else if (sort === "priceDesc") pool.sort((a,b) => pv(b, -1) - pv(a, -1) || byDate(a,b));

@@ -74,6 +74,7 @@ def ja_name(title, desc):
 DEMO = re.compile(r"体験版|デモ版|トライアル版|\bdemo\b|\bfree trial\b", re.I)
 
 sale_start = load_json("sale_start.json", {})
+first_seen = load_json("first_seen.json", {})  # ハコディグに初めて載った日時（最近14日分）
 dlc = load_json("dlc.json", {})
 GP_MANUAL = load_json("gp_manual.json", {})
 # 同梱されているDLC（シーズンパスなど）は、そのエディションの一覧から除く
@@ -99,6 +100,8 @@ for gid, r in cat.items():
         g["ge"] = r["ge"]  # ゲームパスなどに入った日
     if gid in sale_start and r.get("pr") and r["pr"][2]:
         g["ss"] = sale_start[gid]  # セールの開始日（ハコディグが見つけた日）
+    if gid in first_seen:
+        g["fs"] = first_seen[gid]
     if r.get("e"):
         g["e"] = r["e"]
     if DEMO.search(r["t"]):
