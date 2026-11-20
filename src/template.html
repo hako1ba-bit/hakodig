@@ -745,7 +745,7 @@ function refresh(){ page = 1; render(); }
 // 絞り込みで選んでいる条件（カードのタグを光らせる）
 let SEL = {gp: new Set(), pl: new Set(), pa: false};
 // 大型セールのボタン（スマホ・PCともタブの上。押すとセール中タブでそのセールだけ）
-function inBig(g, b){ return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000") >= (b.s || "0000") && (g.ss || "0000") <= (b.u || "9999"); }
+function inBig(g, b){ return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000").slice(0, 10) >= (b.s || "0000") && (g.ss || "0000").slice(0, 10) <= (b.u || "9999"); }
 let BIGN = [], BIGD = null;  // 本数（全データを読み込んだら数え直す）
 const BIGV = BIGS.filter(b => !b.f || Date.now() >= Date.parse(b.f));  // 開始時刻（from）より前は出さない
 function renderBig(v){
@@ -839,7 +839,7 @@ function render(){
   for (const g of shown){
     const saleEnd = v === "sale" && sort === "saleEnd";
     if ((sort === "date" || saleEnd) && !byRel){
-      const key = saleEnd ? endKey(g) : v === "sale" ? (g.ss || "0000") : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : released(g) ? "記載なし" : "未定");
+      const key = saleEnd ? endKey(g) : v === "sale" ? (g.ss || "0000").slice(0, 10) : (g.d ? g.d.slice(0, v === "released" || v === "demo" ? 10 : 7) : released(g) ? "記載なし" : "未定");
       if (key !== last){
         const label = saleEnd
           ? (key.startsWith("9999") ? "終了日の記載なし" : `${+key.slice(5,7)}/${+key.slice(8,10)} までのセール`)

@@ -139,8 +139,11 @@ for i, r in fresh.items():
 
 # 5b. セールの開始日（ストアには載っていないので、ハコディグが初めてセールを見つけた日を data/sale_start.json に記録する）
 on_sale = lambda r: bool(r and r.get("pr") and (r["pr"][2] or 0) > 0)
+# 同じ日の2回目以降の更新で見つけたものは日付の後ろに b, c, d… を付ける（同じ日の中で、あとから始まったセールを上に並べるため）
 ss_old = load_json("sale_start.json", {})
-ss = {}
+used = sorted(v[10:] for v in ss_old.values() if v[:10] == T)
+mark = T if not used else T + (chr(ord(max(used) or "a") + 1))
+ss, ss_new = {}, set()
 for i, r in fresh.items():
     if not on_sale(r):
         continue
@@ -149,7 +152,7 @@ for i, r in fresh.items():
     elif on_sale(cat.get(i)):
         ss[i] = "0000"  # 前回からセール中で開始日が分からないもの
     else:
-        ss[i] = T
+        ss[i] = mark; ss_new.add(i)
 save_json("sale_start.json", dict(sorted(ss.items())))
 
 # 5c. ハコディグに初めて載った日時（同じ発売日の作品は、あとから載ったものを上に並べるため）。14日たったら消す（最初に読むデータを増やしすぎない）
@@ -181,7 +184,7 @@ GPT = {"Essential", "Premium", "Ultimate", "PC Game Pass"}
 new_ids = [i for i in fresh if i not in cat]
 n_new = sum(1 for i in new_ids if not DEMO_T.search(fresh[i]["t"]))
 n_demo = sum(1 for i in new_ids if DEMO_T.search(fresh[i]["t"]))
-n_sale = sum(1 for i, d in ss.items() if d == T and not on_sale(cat.get(i)))
+n_sale = len(ss_new)
 n_gp = sum(1 for i, r in fresh.items() if i in cat and (set(r.get("gp", [])) & GPT) - set(cat[i].get("gp", [])))
 parts = [f"新しい作品を{n_new}本追加" if n_new else "", f"体験版を{n_demo}本追加" if n_demo else "",
          f"セール開始 {n_sale}本" if n_sale else "", f"ゲームパスに{n_gp}本追加" if n_gp else ""]

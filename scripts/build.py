@@ -207,7 +207,7 @@ for s, m in desc.items():
 from collections import Counter
 ends = Counter(g["pr"][3] for g in games if g.get("pr") and g["pr"][2] and g["pr"][3] and not g.get("dm"))
 def in_big(g, b):  # 終了日が ends のどれか、かつ開始日（ハコディグが見つけた日）が since〜until
-    ss = g.get("ss") or "0000"
+    ss = (g.get("ss") or "0000")[:10]  # 日付だけで比べる（後ろの b, c… は同じ日の何回目の更新か）
     return (g.get("pr") and g["pr"][2] and not g.get("dm") and g["pr"][3] in b["ends"]
             and ss >= b.get("since", "0000") and ss <= b.get("until", "9999"))
 big, used = [], set()
