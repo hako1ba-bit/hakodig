@@ -18,9 +18,9 @@
 }
 *{box-sizing:border-box}
 body{background:radial-gradient(1200px 500px at 85% -10%,#0f2a1d 0%,transparent 60%),var(--bg);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.6}
-/* 背景画像：雰囲気づけだけ。暗く重ねて情報の見やすさを優先。固定はiOSでも効くよう疑似要素で */
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(rgba(8,17,13,.9),rgba(8,17,13,.8) 260px,rgba(8,17,13,.84)),url(assets/bg-pc.webp) center top/cover no-repeat,var(--bg)}
-@media (max-width:760px){body::before{background:linear-gradient(rgba(8,17,13,.9),rgba(8,17,13,.8) 300px,rgba(8,17,13,.84)),url(assets/bg-sp.webp) center top/cover no-repeat,var(--bg)}}
+/* 背景画像（PC・スマホ共通の1枚）：雰囲気づけだけ。暗く重ねて情報の見やすさを優先。固定はiOSでも効くよう疑似要素で */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(rgba(8,17,13,.9),rgba(8,17,13,.8) 260px,rgba(8,17,13,.84)),url(assets/bg.webp) center top/cover no-repeat,var(--bg)}
+@media (max-width:760px){body::before{background:linear-gradient(rgba(8,17,13,.9),rgba(8,17,13,.8) 300px,rgba(8,17,13,.84)),url(assets/bg.webp) center top/cover no-repeat,var(--bg)}}
 .wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;padding-bottom:16px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--glow)}
 h1{font-family:var(--f-logo);font-weight:400;font-size:clamp(45px,9vw,63px);line-height:1.15;margin:0;letter-spacing:.02em;text-wrap:balance}
