@@ -27,6 +27,7 @@ print(f"details: {len(det)} done, {len(missing)} missing, {len(refresh)} to refr
 
 end = time.time() + args.minutes * 60
 n = 0
+new_pa = []  # 取り直しで、ストアページの記載が「Play Anywhere なし」→「あり」に変わった作品（＝本当に新しく対応した作品）
 for gid in queue:
     if time.time() > end:
         break
@@ -51,6 +52,9 @@ for gid in queue:
         rd = (p.get("releaseDate") or "")[:10]
         if rd and rd < "2100":
             rec["d"] = rd
+        old = det.get(gid) or {}
+        if not old.get("none") and old.get("pa") == 0 and rec["pa"] == 1:
+            new_pa.append(gid)
         det[gid] = rec
     n += 1
     if n % 200 == 0:
@@ -59,6 +63,17 @@ for gid in queue:
     time.sleep(1)
 
 save_jsonl("details.jsonl", det)
+
+# 「最新のアップデート」に、新しく Play Anywhere 対応になった作品を記録（初回取得の作品は数えない）
+if new_pa:
+    names = [cat[i].get("t", i) for i in new_pa]
+    text = f"Play Anywhere 対応になった作品 {len(names)}本：" + "、".join(names[:5]) + (f" ほか{len(names) - 5}本" if len(names) > 5 else "")
+    now = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
+    log = load_json("changelog.json", [])
+    log.insert(0, {"at": now.strftime("%Y-%m-%d %H:%M"), "text": text})
+    save_json("changelog.json", log[:60])
+    print("changelog:", text, flush=True)
+
 left = sum(1 for i in cat if i not in det)
 print(f"fetched {n}; {left} still missing", flush=True)
 if os.environ.get("GITHUB_OUTPUT"):
