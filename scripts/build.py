@@ -244,6 +244,10 @@ for name, title in [("privacy", "プライバシーポリシー"), ("terms", "�
     with open(os.path.join(OUT, name + ".html"), "w", encoding="utf-8") as f:
         f.write(head.replace("__TITLE__", title) + body)
 
+# 画像などの素材（背景画像）をそのままコピー
+if os.path.isdir(os.path.join(ROOT, "src", "assets")):
+    shutil.copytree(os.path.join(ROOT, "src", "assets"), os.path.join(OUT, "assets"))
+
 # 安全のためのヘッダー。ページ内のプログラムは、このページに書いたもの（ハッシュで指定）以外は動かさない
 import hashlib, base64
 sh = lambda x: "'sha256-" + base64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'"
@@ -260,7 +264,8 @@ csp = "; ".join([
 with open(os.path.join(OUT, "_headers"), "w") as f:
     f.write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n"
             "  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\n"
-            "  Strict-Transport-Security: max-age=31536000\n  Content-Security-Policy: " + csp + "\n")
+            "  Strict-Transport-Security: max-age=31536000\n  Content-Security-Policy: " + csp + "\n"
+            + "/assets/*\n  Cache-Control: public, max-age=2592000\n")
 
 done = sum(1 for g in games if "lp" not in g)
 print(f"built: {len(games)} games, first {len(first)}, rest {len(rest)}, language info {done}/{len(games)}")
