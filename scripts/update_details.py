@@ -28,6 +28,7 @@ print(f"details: {len(det)} done, {len(missing)} missing, {len(refresh)} to refr
 end = time.time() + args.minutes * 60
 n = 0
 new_pa = []  # 取り直しで、ストアページの記載が「Play Anywhere なし」→「あり」に変わった作品（＝本当に新しく対応した作品）
+new_ja = []  # 取り直しで、日本語の音声・UI・字幕のどれかが新しく「対応」になった作品と、増えた項目
 for gid in queue:
     if time.time() > end:
         break
@@ -55,6 +56,12 @@ for gid in queue:
         old = det.get(gid) or {}
         if not old.get("none") and old.get("pa") == 0 and rec["pa"] == 1:
             new_pa.append(gid)
+        # 前回「ストアページに記載なし」だった作品は数えない（ストア側で一時的に記載が消えることがあり、誤って「新しく対応」と出さないため）
+        if old.get("lang") and rec["lang"] and not old.get("none"):
+            before = old["lang"]
+            added = [k for k, x, y in zip(("音声", "UI", "字幕"), before, rec["lang"]) if y and not x]
+            if added:
+                new_ja.append((gid, added))
         det[gid] = rec
     n += 1
     if n % 200 == 0:
@@ -64,15 +71,22 @@ for gid in queue:
 
 save_jsonl("details.jsonl", det)
 
-# 「最新のアップデート」に、新しく Play Anywhere 対応になった作品を記録（初回取得の作品は数えない）
+# 「最新のアップデート」に、ストアページの記載が新しく変わった作品を記録（初回取得の作品は数えない）
+def more(n):
+    return f" ほか{n - 5}本" if n > 5 else ""
+
+lines = []
+if new_ja:  # 日本語対応がいちばん大事なので先に出す
+    lines.append(f"日本語に対応した作品 {len(new_ja)}本：" + "、".join(f"{cat[i].get('t', i)}（{'・'.join(a)}）" for i, a in new_ja[:5]) + more(len(new_ja)))
 if new_pa:
-    names = [cat[i].get("t", i) for i in new_pa]
-    text = f"Play Anywhere 対応になった作品 {len(names)}本：" + "、".join(names[:5]) + (f" ほか{len(names) - 5}本" if len(names) > 5 else "")
-    now = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
+    lines.append(f"Play Anywhere 対応になった作品 {len(new_pa)}本：" + "、".join(cat[i].get("t", i) for i in new_pa[:5]) + more(len(new_pa)))
+if lines:
+    now = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
     log = load_json("changelog.json", [])
-    log.insert(0, {"at": now.strftime("%Y-%m-%d %H:%M"), "text": text})
+    for text in reversed(lines):  # 日本語対応の行が上に来るように
+        log.insert(0, {"at": now, "text": text})
+        print("changelog:", text, flush=True)
     save_json("changelog.json", log[:60])
-    print("changelog:", text, flush=True)
 
 left = sum(1 for i in cat if i not in det)
 print(f"fetched {n}; {left} still missing", flush=True)
