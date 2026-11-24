@@ -206,15 +206,25 @@ for s, m in desc.items():
 # 大型セール：名前つき（data/big_sales.json）＋同じ終了日が400本以上のまとまり
 from collections import Counter
 ends = Counter(g["pr"][3] for g in games if g.get("pr") and g["pr"][2] and g["pr"][3] and not g.get("dm"))
-def in_big(g, b):  # 終了日が ends のどれか、かつ開始日（ハコディグが見つけた日）が since〜until
+big_ids = load_json("big_sale_ids.json", {})
+def in_big(g, b):  # 公式ページ（channel）に載っている作品。channel がなければ終了日と開始日で選ぶ
+    if not (g.get("pr") and g["pr"][2] and not g.get("dm")):
+        return False
+    if b.get("channel"):
+        return g["id"] in chset.get(b["channel"], set())
     ss = (g.get("ss") or "0000")[:10]  # 日付だけで比べる（後ろの b, c… は同じ日の何回目の更新か）
-    return (g.get("pr") and g["pr"][2] and not g.get("dm") and g["pr"][3] in b["ends"]
-            and ss >= b.get("since", "0000") and ss <= b.get("until", "9999"))
-big, used = [], set()
+    return g["pr"][3] in b["ends"] and ss >= b.get("since", "0000") and ss <= b.get("until", "9999")
+chset = {k: set(v) for k, v in big_ids.items()}
+big, used, bigout = [], set(), {}
 for b in load_json("big_sales.json", {}).get("sales", []):
-    if sum(1 for g in games if in_big(g, b)) >= 50:
-        big.append({"n": b["name"], "e": b["ends"], **{k: b[x] for k, x in (("p", "period"), ("f", "from"), ("s", "since"), ("u", "until")) if b.get(x)}})
-        used.update(b["ends"])
+    hit = [g["id"] for g in games if in_big(g, b)]
+    if len(hit) >= 50:
+        e = {"n": b["name"], "e": b["ends"], **{k: b[x] for k, x in (("p", "period"), ("f", "from"), ("s", "since"), ("u", "until")) if b.get(x)}}
+        if b.get("channel"):
+            e["c"] = b["channel"]; bigout[b["channel"]] = sorted(hit)  # ページを開いたときに bigsale.json を1回だけ読む
+        big.append(e); used.update(b["ends"])
+with open(os.path.join(OUT, "bigsale.json"), "w", encoding="utf-8") as f:
+    f.write(dump(bigout))  # 大型セールの公式ページに載っている作品ID（ページを開いたときに1回だけ読む）
 for e, n in ends.most_common():
     if n >= 400 and e not in used:
         big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})

@@ -176,6 +176,18 @@ if os.environ.get("SLOT") in ("morning", "evening"):
     meta[os.environ["SLOT"] + "_at"] = T  # その回（朝・夕方）の更新が済んだ印
 meta["list_t"] = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")  # 日本時間
 meta["count"] = len(fresh)
+# 6c. 大型セールの公式ページ（big_sales.json の channel）に載っている作品。セール期間中だけ取る
+bs_ids = {}
+for b in load_json("big_sales.json", {}).get("sales", []):
+    if b.get("channel") and b.get("last", "9999") >= T:
+        try:
+            bs_ids[b["channel"]] = sorted(set(channel_ids(b["channel"])))
+            print(b["channel"], len(bs_ids[b["channel"]]), "件")
+        except Exception as e:
+            print("公式ページの取得に失敗", b["channel"], e)
+            bs_ids[b["channel"]] = load_json("big_sale_ids.json", {}).get(b["channel"], [])
+save_json("big_sale_ids.json", bs_ids)
+
 save_json("meta.json", meta)
 
 # 7. 「最新のアップデート」用の記録（今回の更新で増えたもの）

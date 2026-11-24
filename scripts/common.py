@@ -72,6 +72,30 @@ def browse(filters=None, loc="ja-JP", sort="ReleaseDate desc", tag="hakosearch")
             return
 
 
+def channel_ids(channel, loc="ja-JP", tag="hakodigCh", max_pages=300):
+    """ストアの特集ページ（例 BLACK-FRIDAY）に載っている作品IDを全部取る"""
+    ct, n, ids = "", 0, []
+    while n < max_pages:
+        n += 1
+        body = json.dumps({"Filters": "", "ReturnFilters": False, "ChannelKeyToBeUsedInResponse": "A",
+                           "EncodedCT": ct, "ChannelId": channel}).encode()
+        j = json.loads(http(BROWSE.format(loc=loc), body,
+                            {"content-type": "application/json", "x-ms-api-version": "1.1", "ms-cv": f"{tag}.{n}"}))
+        ps = j.get("productSummaries") or []
+        ids += [p["productId"] for p in ps]
+        ct = list((j.get("channels") or {"x": {}}).values())[0].get("encodedCT")
+        more = False
+        if ct and ps:
+            try:
+                more = json.loads(base64.b64decode(ct)).get("HasMore", False)
+            except Exception:
+                more = True
+        if not more:
+            break
+        time.sleep(0.5)
+    return ids
+
+
 SEARCH = "https://emerald.xboxservices.com/xboxcomfd/search/games?locale={loc}"
 
 

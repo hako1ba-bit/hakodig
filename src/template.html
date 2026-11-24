@@ -748,17 +748,21 @@ function refresh(){ page = 1; render(); }
 // 絞り込みで選んでいる条件（カードのタグを光らせる）
 let SEL = {gp: new Set(), pl: new Set(), pa: false};
 // 大型セールのボタン（スマホ・PCともタブの上。押すとセール中タブでそのセールだけ）
-function inBig(g, b){ return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000").slice(0, 10) >= (b.s || "0000") && (g.ss || "0000").slice(0, 10) <= (b.u || "9999"); }
-let BIGN = [], BIGD = null;  // 本数（全データを読み込んだら数え直す）
+let BIGSET = {};  // 大型セールの公式ページに載っている作品ID（bigsale.json）
+function inBig(g, b){
+  if (b.c) return onSale(g) && !g.dm && !!BIGSET[b.c] && g.versions.some(x => BIGSET[b.c].has(x.id));
+  return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000").slice(0, 10) >= (b.s || "0000") && (g.ss || "0000").slice(0, 10) <= (b.u || "9999"); }
+let BIGN = [], BIGD = null, BIGL = 0;  // 本数（全データを読み込んだら数え直す）
 const BIGV = BIGS.filter(b => !b.f || Date.now() >= Date.parse(b.f));  // 開始時刻（from）より前は出さない
 function renderBig(v){
-  if (BIGD !== DATA){ BIGD = DATA; BIGN = BIGV.map(b => DATA.filter(g => inBig(g, b)).length); }
+  if (BIGD !== DATA || BIGL !== Object.keys(BIGSET).length){ BIGD = DATA; BIGL = Object.keys(BIGSET).length; BIGN = BIGV.map(b => DATA.filter(g => inBig(g, b)).length); }
   const html = BIGV.map((b, i) => {
+    if (b.c && !BIGSET[b.c]) return "";  // 公式ページの一覧を読み込むまでは出さない
     const on = BIG === b, end = b.e.map(e => `${+e.slice(0,2)}/${+e.slice(3,5)}`).sort().pop();
     return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">大型セール</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">${esc(b.p || "〜" + end)} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
   }).join("");
   $("#bs-top").innerHTML = $("#bs-main").innerHTML = html;
-  $("#bs-top").hidden = !BIGV.length;
+  $("#bs-top").hidden = !html;
   $("#bs-main").hidden = !BIGV.length || !(v === "sale" || BIG);
 }
 document.addEventListener("click", e => {
@@ -973,6 +977,10 @@ $("#list").addEventListener("click", e => {
   if (again) again.focus({preventScroll: true});
 });
 counts(); render();
+if (BIGS.some(b => b.c)) fetch("bigsale.json").then(r => r.ok ? r.json() : {}).then(m => {
+  for (const [k, v] of Object.entries(m)) BIGSET[k] = new Set(v);
+  render();
+}).catch(() => {});
 fetch("all.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(rows => {
   RAW = RAW.concat(rows);
   DATA = group(RAW);
