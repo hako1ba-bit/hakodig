@@ -210,10 +210,12 @@ big_ids = load_json("big_sale_ids.json", {})
 def in_big(g, b):  # 公式ページ（channel）に載っている作品。channel がなければ終了日と開始日で選ぶ
     if not (g.get("pr") and g["pr"][2] and not g.get("dm")):
         return False
+    ss = (g.get("ss") or "0000")[:10]  # 日付だけで比べる（後ろの b, c… は同じ日の何回目の更新か）
+    if not (b.get("since", "0000") <= ss <= b.get("until", "9999")):
+        return False
     if b.get("channel"):
         return g["id"] in chset.get(b["channel"], set())
-    ss = (g.get("ss") or "0000")[:10]  # 日付だけで比べる（後ろの b, c… は同じ日の何回目の更新か）
-    return g["pr"][3] in b["ends"] and ss >= b.get("since", "0000") and ss <= b.get("until", "9999")
+    return g["pr"][3] in b["ends"]
 chset = {k: set(v) for k, v in big_ids.items()}
 big, used, bigout = [], set(), {}
 for b in load_json("big_sales.json", {}).get("sales", []):
@@ -221,7 +223,7 @@ for b in load_json("big_sales.json", {}).get("sales", []):
     if len(hit) >= 50:
         e = {"n": b["name"], "e": b["ends"], **{k: b[x] for k, x in (("p", "period"), ("f", "from"), ("s", "since"), ("u", "until")) if b.get(x)}}
         if b.get("channel"):
-            e["c"] = b["channel"]; bigout[b["channel"]] = sorted(hit)  # ページを開いたときに bigsale.json を1回だけ読む
+            e["c"] = b["channel"]; bigout[b["channel"]] = sorted(set(bigout.get(b["channel"], [])) | set(hit))  # ページを開いたときに bigsale.json を1回だけ読む
         big.append(e); used.update(b["ends"])
 with open(os.path.join(OUT, "bigsale.json"), "w", encoding="utf-8") as f:
     f.write(dump(bigout))  # 大型セールの公式ページに載っている作品ID（ページを開いたときに1回だけ読む）

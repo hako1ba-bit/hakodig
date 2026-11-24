@@ -750,7 +750,8 @@ let SEL = {gp: new Set(), pl: new Set(), pa: false};
 // 大型セールのボタン（スマホ・PCともタブの上。押すとセール中タブでそのセールだけ）
 let BIGSET = {};  // 大型セールの公式ページに載っている作品ID（bigsale.json）
 function inBig(g, b){
-  if (b.c) return onSale(g) && !g.dm && !!BIGSET[b.c] && g.versions.some(x => BIGSET[b.c].has(x.id));
+  const ss = (g.ss || "0000").slice(0, 10);
+  if (b.c) return onSale(g) && !g.dm && !!BIGSET[b.c] && g.versions.some(x => BIGSET[b.c].has(x.id)) && ss >= (b.s || "0000") && ss <= (b.u || "9999");
   return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000").slice(0, 10) >= (b.s || "0000") && (g.ss || "0000").slice(0, 10) <= (b.u || "9999"); }
 let BIGN = [], BIGD = null, BIGL = 0;  // 本数（全データを読み込んだら数え直す）
 const BIGV = BIGS.filter(b => !b.f || Date.now() >= Date.parse(b.f));  // 開始時刻（from）より前は出さない
