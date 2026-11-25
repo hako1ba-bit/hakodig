@@ -231,6 +231,22 @@ for b in load_json("big_sales.json", {}).get("sales", []):
         big.append(e); used.update(b["ends"])
 with open(os.path.join(OUT, "bigsale.json"), "w", encoding="utf-8") as f:
     f.write(dump(bigout))  # 大型セールの公式ページに載っている作品ID（ページを開いたときに1回だけ読む）
+# ウィークリーセール：火曜に始まって翌週の火曜に終わるセール（毎週のセール）。50本以上あればボタンを出す。
+# 開始日はハコディグが見つけた日なので、火曜か水曜に見つけたものを数える。大型セールと終了日が重なる週は出さない
+WEEKLY_FROM = "2026-12-01"
+for e, n in ends.items():
+    try:
+        end = datetime.date(int(e[6:10]), int(e[:2]), int(e[3:5]))
+    except ValueError:
+        continue
+    start = end - datetime.timedelta(days=7)
+    if end.weekday() != 1 or e in used or str(start) < WEEKLY_FROM:
+        continue
+    b = {"ends": [e], "since": str(start), "until": str(start + datetime.timedelta(days=1))}
+    if sum(1 for g in games if in_big(g, b)) >= 50:
+        big.append({"n": "ウィークリーセール", "tag": "毎週のセール", "e": [e], "s": b["since"], "u": b["until"],
+                    "p": f"{start.month}/{start.day}〜{end.month}/{end.day}"})
+        used.add(e)
 for e, n in ends.most_common():
     if n >= 400 and e not in used:
         big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})

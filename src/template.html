@@ -760,7 +760,7 @@ function renderBig(v){
   const html = BIGV.map((b, i) => {
     if (b.c && !BIGSET[b.c]) return "";  // 公式ページの一覧を読み込むまでは出さない
     const on = BIG === b, end = b.e.map(e => `${+e.slice(0,2)}/${+e.slice(3,5)}`).sort().pop();
-    return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">大型セール</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">${esc(b.p || "〜" + end)} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
+    return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">${esc(b.tag || "大型セール")}</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">${esc(b.p || "〜" + end)} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
   }).join("");
   $("#bs-top").innerHTML = $("#bs-main").innerHTML = html;
   $("#bs-top").hidden = !html;
