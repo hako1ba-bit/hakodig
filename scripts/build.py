@@ -15,11 +15,11 @@ aliases = load_json("aliases.json", {})
 overrides = load_json("overrides.json", {})
 force_rel, force_hide = set(overrides.get("released", [])), set(overrides.get("hidden", []))
 man_dates = overrides.get("dates", {})  # 発売日の手動指定
+meta = load_json("meta.json", {})
+T = today()
 # Xboxアプリと同じデータベースから補った発売日（update_dates.py）。これからの日付だけ使う
 # （過去の日付は、販売が止まった作品を「発売中」に移してしまうおそれがあるので使わない）
 rel_dates = {k: v for k, v in load_json("release_dates.json", {}).items() if v >= T}
-meta = load_json("meta.json", {})
-T = today()
 
 # ---------- 英語タイトルのカタカナ読み ----------
 # data/kana_words.txt（手で足した単語）→ alkana（英単語辞書）の順に引く。読めない単語は飛ばす
