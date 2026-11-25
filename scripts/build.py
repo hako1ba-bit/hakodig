@@ -98,6 +98,8 @@ for gid, r in cat.items():
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d"), rel_dates.get(gid), man_dates.get(gid)) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
+    if not any(x and x < "2100" for x in (r.get("d"), dt.get("d"))) and g["d"] and not r.get("pr"):
+        g["fd"] = 1  # 発売日はアプリ側の情報か手動指定だけで、ストアではまだ売っていない。日付が来ても「発売予定」に置く
     if gid in dlc and dlc[gid]["items"]:
         g["dl"] = len(dlc[gid]["items"])  # DLCの数（中身はカードで押したときに dlc/ID.json を読む）
     if r.get("ge") and r.get("gp"):
