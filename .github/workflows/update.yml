@@ -86,6 +86,10 @@ jobs:
         env:
           SLOT: ${{ needs.check.outputs.slot }}
         run: python scripts/update_list.py
+      - name: 発売日がない発売予定の作品は、Xboxアプリと同じデータベースから発売日を補う
+        if: inputs.skip_list != 'yes'
+        continue-on-error: true
+        run: python scripts/update_dates.py
       - name: 一覧を保存
         if: inputs.skip_list != 'yes'
         run: sh scripts/commit_data.sh "一覧更新"

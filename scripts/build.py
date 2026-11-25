@@ -14,6 +14,10 @@ low = load_jsonl("low.jsonl")
 aliases = load_json("aliases.json", {})
 overrides = load_json("overrides.json", {})
 force_rel, force_hide = set(overrides.get("released", [])), set(overrides.get("hidden", []))
+man_dates = overrides.get("dates", {})  # 発売日の手動指定
+# Xboxアプリと同じデータベースから補った発売日（update_dates.py）。これからの日付だけ使う
+# （過去の日付は、販売が止まった作品を「発売中」に移してしまうおそれがあるので使わない）
+rel_dates = {k: v for k, v in load_json("release_dates.json", {}).items() if v >= T}
 meta = load_json("meta.json", {})
 T = today()
 
@@ -92,7 +96,7 @@ for gid, r in cat.items():
         continue
     dt = det.get(gid, {})
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
-         "d": next((x for x in (r.get("d"), dt.get("d")) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
+         "d": next((x for x in (r.get("d"), dt.get("d"), rel_dates.get(gid), man_dates.get(gid)) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
     if gid in dlc and dlc[gid]["items"]:
         g["dl"] = len(dlc[gid]["items"])  # DLCの数（中身はカードで押したときに dlc/ID.json を読む）
