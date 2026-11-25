@@ -263,6 +263,8 @@ for name, title in [("privacy", "プライバシーポリシー"), ("terms", "�
 # 画像などの素材（背景画像）をそのままコピー
 if os.path.isdir(os.path.join(ROOT, "src", "assets")):
     shutil.copytree(os.path.join(ROOT, "src", "assets"), os.path.join(OUT, "assets"))
+for f in os.listdir(os.path.join(ROOT, "src", "static")):  # favicon.ico・apple-touch-icon.png・robots.txt（ブラウザが自動で探すもの）
+    shutil.copy(os.path.join(ROOT, "src", "static", f), os.path.join(OUT, f))
 
 # 安全のためのヘッダー。ページ内のプログラムは、このページに書いたもの（ハッシュで指定）以外は動かさない
 import hashlib, base64
