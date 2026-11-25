@@ -37,9 +37,12 @@ jobs:
         run: |
           npx -y wrangler@4.151.0 d1 migrations apply hakodig --remote
           npx -y wrangler@4.151.0 deploy
-      # 旧アドレス（GitHub Pages）は新しいアドレスへの案内だけにする
+      # 旧アドレス（GitHub Pages）は新しいアドレスへの案内だけにする。
+      # GitHub側の一時的な不具合でここだけ失敗することがあるが、本体（Cloudflare）には影響しないので失敗扱いにしない
       - uses: actions/upload-pages-artifact@v3
+        continue-on-error: true
         with:
           path: src/redirect
       - id: deploy
+        continue-on-error: true
         uses: actions/deploy-pages@v4
