@@ -752,7 +752,7 @@ let SEL = {gp: new Set(), pl: new Set(), pa: false};
 let BIGSET = {};  // 大型セールの公式ページに載っている作品ID（bigsale.json）
 function inBig(g, b){
   const ss = (g.ss || "0000").slice(0, 10);
-  if (b.w) return onSale(g) && !g.dm && ss >= b.s && ss <= b.u && !(b.x || []).some(c => BIGSET[c] && g.versions.some(x => BIGSET[c].has(x.id)));  // 今週のセール
+  if (b.w) return onSale(g) && !g.dm && ss >= b.s && ss <= b.u && !BIGS.some(o => !o.w && inBig(g, o));  // 今週のセール（ほかのボタンに入っている作品は除く）
   if (b.c) return onSale(g) && !g.dm && !!BIGSET[b.c] && g.versions.some(x => BIGSET[b.c].has(x.id)) && ss >= (b.s || "0000") && ss <= (b.u || "9999");
   return onSale(g) && !g.dm && b.e.includes(g.price.end) && (g.ss || "0000").slice(0, 10) >= (b.s || "0000") && (g.ss || "0000").slice(0, 10) <= (b.u || "9999"); }
 let BIGN = [], BIGD = null, BIGL = 0;  // 本数（全データを読み込んだら数え直す）
@@ -761,7 +761,7 @@ function renderBig(v){
   if (BIGD !== DATA || BIGL !== Object.keys(BIGSET).length){ BIGD = DATA; BIGL = Object.keys(BIGSET).length; BIGN = BIGV.map(b => DATA.filter(g => inBig(g, b)).length); }
   const html = BIGV.map((b, i) => {
     if (b.c && !BIGSET[b.c]) return "";  // 公式ページの一覧を読み込むまでは出さない
-    if (b.w && (b.x || []).some(c => !BIGSET[c])) return "";
+    if (b.w && BIGS.some(o => o.c && !BIGSET[o.c])) return "";  // 大型セールの一覧を読み込むまで待つ
     const on = BIG === b, end = b.e.map(e => `${+e.slice(0,2)}/${+e.slice(3,5)}`).sort().pop();
     return `<button class="bigsale${on ? " on" : ""}" data-big="${i}" aria-pressed="${on}"><span class="bs-tag">${esc(b.tag || "大型セール")}</span><span class="bs-name">${esc(b.n)}</span><span class="bs-meta">${esc(b.p || "〜" + end)} · ${BIGN[i].toLocaleString()}本</span><span class="bs-go">${on ? "✕ 解除" : "見る ›"}</span></button>`;
   }).join("");

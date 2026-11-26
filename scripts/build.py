@@ -234,18 +234,19 @@ for b in load_json("big_sales.json", {}).get("sales", []):
 with open(os.path.join(OUT, "bigsale.json"), "w", encoding="utf-8") as f:
     f.write(dump(bigout))  # 大型セールの公式ページに載っている作品ID（ページを開いたときに1回だけ読む）
 # 今週のセール：その週（火曜〜翌週月曜）に始まったセール。週替わりセールは火曜に始まり、水・木曜にも追加がある。
-# 大型セールの公式ページに載っている作品は、そちらのボタンに任せて入れない。50本以上あればボタンを出す
-WEEKLY_FROM = "2026-12-01"
+# ほかのボタン（大型セール）に入っている作品は入れない。50本以上あればボタンを出す
+WEEKLY_FROM = "2026-11-24"
 today_d = datetime.date.fromisoformat(T)
 wk = today_d - datetime.timedelta(days=(today_d.weekday() - 1) % 7)  # 直近の火曜
 if str(wk) >= WEEKLY_FROM:
-    ex = set().union(*[chset.get(x["c"], set()) for x in big if x.get("c")]) if big else set()
+    named = [b for b in load_json("big_sales.json", {}).get("sales", []) if any(x["n"] == b["name"] for x in big)]
+    ex = {g["id"] for g in games for b in named if in_big(g, b)}
     wb = {"ends": None, "since": str(wk), "until": str(wk + datetime.timedelta(days=6))}
     hit = [g for g in games if g.get("pr") and g["pr"][2] and not g.get("dm") and g["id"] not in ex
            and wb["since"] <= (g.get("ss") or "0000")[:10] <= wb["until"]]
     if len(hit) >= 50:
         big.append({"n": "今週のセール", "tag": "毎週のセール", "w": 1, "s": wb["since"], "u": wb["until"],
-                    "x": [x["c"] for x in big if x.get("c")], "e": [], "p": f"{wk.month}/{wk.day}〜"})
+                    "e": [], "p": f"{wk.month}/{wk.day}〜"})
 for e, n in ends.most_common():
     if n >= 400 and e not in used:
         big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})
