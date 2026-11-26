@@ -28,7 +28,8 @@ export default {
       method: "POST",
       headers: { "authorization": `Bearer ${env.GH_DISPATCH}`, "accept": "application/vnd.github+json",
                  "user-agent": "hakodig-cron", "x-github-api-version": "2022-11-28" },
-      body: JSON.stringify({ ref: "main", inputs: { scheduled: "yes" } }),
+      // 火曜の追加更新は、朝・夕方の「済んでいれば何もしない」判定にかけず、必ず一覧を取り直す
+      body: JSON.stringify({ ref: "main", inputs: event.cron === "7 2 * * 2" ? { detail_minutes: "20" } : { scheduled: "yes" } }),
     });
     if (!r.ok) console.log("dispatch failed", r.status);
   },
