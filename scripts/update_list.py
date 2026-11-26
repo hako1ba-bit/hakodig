@@ -22,9 +22,15 @@ def compact(p):
     img = (imgs.get("poster") or imgs.get("boxArt") or {}).get("url") or None
     if img and img.startswith(IMG_PREFIX):
         img = img[len(IMG_PREFIX):]
-    d = (p.get("releaseDate") or "")[:10] or None
-    if d and d >= "2100":  # 9998年・2799年などの仮の日付
-        d = None
+    # 発売日時は日本時間に直す（例 "2026-11-26T14:00:00Z" → 11/26 23:00）。時刻も持っておき、発売時刻を過ぎるまでは発売中にしない
+    d, rt = None, None
+    rd = p.get("releaseDate") or ""
+    if rd and rd[:4] < "2100":  # 9998年・2799年などの仮の日付は使わない
+        try:
+            t = datetime.datetime.fromisoformat(rd[:19]) + datetime.timedelta(hours=9)
+            d, rt = t.date().isoformat(), t.strftime("%H:%M")
+        except ValueError:
+            d = rd[:10]
     # passMetadata には過去の参加履歴も残っている。外れた日（exitDateUTC）が過ぎたプランは除き、未来なら終了予定日として残す
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     gp, gx, gn = {PASS[k] for k in p.get("includedWithPassesProductIds") or [] if k in PASS}, {}, {}
@@ -47,7 +53,7 @@ def compact(p):
             gp.add(PASS[k])
             gx[PASS[k]] = jst(ex)
     return {"id": p["productId"], "t": p.get("title") or "", "pub": (p.get("publisherName") or "").strip(),
-            "cat": (p.get("categories") or [""])[0], "d": d, "pl": p.get("availableOn") or [],
+            "cat": (p.get("categories") or [""])[0], "d": d, **({"rt": rt} if rt and rt != "00:00" else {}), "pl": p.get("availableOn") or [],
             "gp": sorted(gp, key=ORDER.index), "pr": pr, "img": img, "rc": p.get("ratingCount") or 0, **({"gx": gx} if gx else {}), **({"gn": gn} if gn else {}),
             **({"ge": min(ge)} if ge else {}),
             **({"big": 1} if (p.get("maxInstallSize") or 0) >= 1_000_000_000 else {})}

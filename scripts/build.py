@@ -17,6 +17,7 @@ force_rel, force_hide = set(overrides.get("released", [])), set(overrides.get("h
 man_dates = overrides.get("dates", {})  # 発売日の手動指定
 meta = load_json("meta.json", {})
 T = today()
+NOW_HM = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")
 # Xboxアプリと同じデータベースから補った発売日（update_dates.py）。これからの日付だけ使う
 # （過去の日付は、販売が止まった作品を「発売中」に移してしまうおそれがあるので使わない）
 rel_dates = {k: v for k, v in load_json("release_dates.json", {}).items() if v >= T}
@@ -98,8 +99,11 @@ for gid, r in cat.items():
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d"), rel_dates.get(gid), man_dates.get(gid)) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
          "pr": r.get("pr"), "img": r.get("img")}
-    if not any(x and x < "2100" for x in (r.get("d"), dt.get("d"))) and g["d"] and not r.get("pr"):
-        g["fd"] = 1  # 発売日はアプリ側の情報か手動指定だけで、ストアではまだ売っていない。日付が来ても「発売予定」に置く
+    # 発売中かどうかの判定に使うのは「ストアの発売日時」だけ。アプリ側（release_dates）や手動の発売日は表示用
+    if any(x and x < "2100" for x in (r.get("d"), dt.get("d"))):
+        g["sd"] = 1  # 発売日はストアの情報
+        if r.get("rt") and r.get("d") == g["d"]:
+            g["rt"] = r["rt"]  # 発売時刻（日本時間）。この時刻を過ぎるまでは発売中にしない
     if gid in dlc and dlc[gid]["items"]:
         g["dl"] = len(dlc[gid]["items"])  # DLCの数（中身はカードで押したときに dlc/ID.json を読む）
     if r.get("ge") and r.get("gp"):
@@ -139,7 +143,7 @@ for gid, r in cat.items():
         g["rc"] = 1  # ストアに評価がある（発売済みの目印）
     if gid in force_rel:
         g["rs"] = 1  # 手動で発売済みに指定
-    elif not g["d"] and gid in low:
+    elif not g.get("sd") and gid in low:
         g["rs"] = 1  # 一度でも価格が付いた作品は発売済み（販売終了で価格が消えても発売予定に戻さない）
     if r.get("big"):
         g["big"] = 1  # インストールサイズが1GB以上（中身が配信されている目印）
@@ -165,9 +169,12 @@ SOUND = re.compile(r"soundtrack|サウンドトラック|\bost\b|artbook|アー�
 WITHGAME = re.compile(r"edition|エディション|bundle|バンドル|版", re.I)
 PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
 PREVIEW = re.compile(r"game preview|ゲーム ?プレビュー", re.I)
-def is_released(g):  # src/template.html の released() と同じ判定
-    if g["d"]:
-        return g["d"] <= T
+def is_released(g):  # src/template.html の released() と同じ判定（ルールは CLAUDE.md「発売中・発売予定の分け方」）
+    if g.get("sd"):  # ストアに発売日がある → その日時（日本時間）を過ぎたら発売中
+        return g["d"] < T or (g["d"] == T and (g.get("rt") or "00:00") <= NOW_HM)
+    if g["d"] and g["d"] >= T:  # ストアに日付がなく、アプリ・手動の日付が今日以降 → 発売予定
+        return False
+    # ストアに日付がない作品（古い作品・販売終了など）は、発売済みの目印があれば発売中
     return bool(g["gp"] or g.get("rc") or (g.get("pr") and g["pr"][0]) or PREVIEW.search(g["t"])
                 or not g["id"].startswith("9") or "XCloud" in g["pl"] or g.get("big") or g.get("rs"))
 rel_titles = sorted({nt(g["t"]) for g in games if is_released(g)}, key=len, reverse=True)
