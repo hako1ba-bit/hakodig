@@ -10,11 +10,12 @@ DC = "https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds={ids}&market=
 
 
 def jst_date(s):
+    """日本時間の "YYYY-MM-DD HH:MM"（並べ替えでいちばん早い日時を選べる）"""
     try:
         t = datetime.datetime.fromisoformat(s[:19]) + datetime.timedelta(hours=9)
     except ValueError:
         return None
-    d = t.strftime("%Y-%m-%d")
+    d = t.strftime("%Y-%m-%d %H:%M")
     return d if "2000" < d < "2100" else None  # 未定のときの仮の日付（2100年など）は使わない
 
 
@@ -23,6 +24,7 @@ def main():
     todo = [r["id"] for r in cat if not r.get("d") and not r.get("pr")]  # 発売日も価格もない＝発売予定で日付不明
     old = load_json("release_dates.json", {})
     out = {}
+    times = load_json("app_times.json", {})  # アプリ側の発売日時（日本時間）。ストアの発売日時と比べるために残しておく
     for i in range(0, len(todo), 20):
         ids = todo[i:i + 20]
         try:
@@ -40,9 +42,24 @@ def main():
                     ds.append(jst_date((av.get("Properties") or {}).get("PreOrderReleaseDate") or ""))
             ds = sorted(x for x in ds if x)
             if ds:
-                out[p["ProductId"]] = ds[0]
+                out[p["ProductId"]] = ds[0][:10]
+                times[p["ProductId"]] = ds[0]
         time.sleep(0.5)
     save_json("release_dates.json", dict(sorted(out.items())))
+    # アプリ側の日時と、あとからストアに入った日時を比べて記録する（CLAUDE.md「発売中・発売予定の分け方」）
+    det = load_jsonl("details.jsonl")
+    cmp = load_json("time_compare.json", {})
+    by_id = {r["id"]: r for r in cat}
+    for k, app in times.items():
+        r, dt = by_id.get(k) or {}, det.get(k) or {}
+        sd, srt = (r.get("d"), r.get("rt")) if r.get("d") else (dt.get("d"), dt.get("rt"))
+        if sd and k not in cmp:
+            store = f"{sd} {srt or '00:00'}"
+            cmp[k] = {"t": r.get("t", ""), "app": app, "store": store, "same": app == store}
+    save_json("app_times.json", dict(sorted(times.items())))
+    save_json("time_compare.json", cmp)
+    diff = [v for v in cmp.values() if not v["same"]]
+    print("アプリとストアの発売日時の比較", len(cmp), "本、ずれ", len(diff), "本", *[f"{v['t']} アプリ{v['app']} ストア{v['store']}" for v in diff[-5:]], sep="\n  ")
     print("発売日を補った作品", len(out), "/", len(todo))
 
 
