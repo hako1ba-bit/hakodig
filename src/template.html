@@ -448,6 +448,7 @@ const ME = {user: null, favs: new Set(), hides: new Set(), snaps: {}};
 let NOTICE = [];
 const CM = {}, CMN = {}, CMT = {}, DRAFT = {};
 const TODAY = "__TODAY__";
+const APP_WAIT = "__APP_WAIT__";  // アプリ側の日付が過ぎても、30日間はストアに発売日が入るまで発売予定
 const BIGS = __BIG__;  // 大型セール [{n:名前, e:[終了日 MM/DD/YYYY]}]
 let BIG = null;        // 選んでいる大型セール
 let FAVONLY = false;   // 「★ お気に入りのみ」（ログイン中だけ）
@@ -714,7 +715,7 @@ const PREVIEW = /game preview|ゲーム ?プレビュー/i;
 const NOW_HM = () => { const t = new Date(Date.now() + 9 * 3600e3); return t.toISOString().slice(11, 16); };
 // 発売中かどうか（ルールは CLAUDE.md「発売中・発売予定の分け方」。scripts/build.py の is_released と同じ）
 const released1 = g => g.sd ? (g.d < TODAY || (g.d === TODAY && (g.rt || "00:00") <= NOW_HM()))
-  : (g.d && g.d >= TODAY) ? false
+  : (g.d && g.d >= APP_WAIT) ? false
   : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0) || PREVIEW.test(g.t) || !/^9/.test(g.id) || !!g.rs || g.pl.includes("XCloud") || !!g.big);
 // まとめたカードは、ストアに発売日がある版があればその版で判断し、なければどれか1つの版が発売中なら発売中
 const released = g => { if (!g.versions) return released1(g); const vs = g.versions.map(v => v.raw), s = vs.filter(x => x.sd); return (s.length ? s : vs).some(released1); };

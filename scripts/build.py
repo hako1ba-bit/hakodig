@@ -20,7 +20,8 @@ T = today()
 NOW_HM = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime("%H:%M")
 # Xboxアプリと同じデータベースから補った発売日（update_dates.py）。これからの日付だけ使う
 # （過去の日付は、販売が止まった作品を「発売中」に移してしまうおそれがあるので使わない）
-rel_dates = {k: v for k, v in load_json("release_dates.json", {}).items() if v >= T}
+APP_WAIT = today(-30)  # アプリ側の日付を過ぎても、ストアに発売日が入るまで発売予定にしておく期間
+rel_dates = {k: v for k, v in load_json("release_dates.json", {}).items() if v >= APP_WAIT}
 
 # ---------- 英語タイトルのカタカナ読み ----------
 # data/kana_words.txt（手で足した単語）→ alkana（英単語辞書）の順に引く。読めない単語は飛ばす
@@ -172,7 +173,7 @@ PREVIEW = re.compile(r"game preview|ゲーム ?プレビュー", re.I)
 def is_released(g):  # src/template.html の released() と同じ判定（ルールは CLAUDE.md「発売中・発売予定の分け方」）
     if g.get("sd"):  # ストアに発売日がある → その日時（日本時間）を過ぎたら発売中
         return g["d"] < T or (g["d"] == T and (g.get("rt") or "00:00") <= NOW_HM)
-    if g["d"] and g["d"] >= T:  # ストアに日付がなく、アプリ・手動の日付が今日以降 → 発売予定
+    if g["d"] and g["d"] >= APP_WAIT:  # ストアに日付がなく、アプリ・手動の日付がある（過ぎて30日以内も）→ ストアに日付が入るまで発売予定
         return False
     # ストアに日付がない作品（古い作品・販売終了など）は、発売済みの目印があれば発売中
     return bool(g["gp"] or g.get("rc") or (g.get("pr") and g["pr"][0]) or PREVIEW.search(g["t"])
@@ -260,7 +261,7 @@ for e, n in ends.most_common():
 
 t = open(os.path.join(ROOT, "src", "template.html"), encoding="utf-8").read()
 t = (t.replace("__DATA__", dump(first)).replace("__ALIASES__", dump(aliases)).replace("__PUBS__", dump(load_json("publishers.json", [])))
-      .replace("__UPDATES__", json.dumps(load_json("changelog.json", [])[:10], ensure_ascii=False, separators=(",", ":"))).replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T).replace("__BIG__", dump(big)))
+      .replace("__UPDATES__", json.dumps(load_json("changelog.json", [])[:10], ensure_ascii=False, separators=(",", ":"))).replace("__FETCHED__", (meta.get("list_at") or T).replace("-", ".") + (" " + meta["list_t"] if meta.get("list_t") else "")).replace("__TODAY__", T).replace("__APP_WAIT__", APP_WAIT).replace("__BIG__", dump(big)))
 page = ('<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
         '<meta name="description" content="Xbox日本ストアのゲームを、日本語対応・ゲームパス・価格で探せる非公式の検索サポート。by ハコイチバ">\n'
