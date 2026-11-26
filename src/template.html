@@ -484,7 +484,7 @@ function group(RAW){
       g.pl.forEach(p => { if (!x.pl.includes(p)) x.pl.push(p); });
       g.gp.forEach(p => { if (!x.gp.includes(p)) x.gp.push(p); });
       x.pa = x.pa || g.pa;
-      if (g.d && (!x.d || g.d < x.d)) x.d = g.d;
+      if (g.d && (!x.d || g.d < x.d)) { x.d = g.d; x.rt = g.rt; }
       if (!x.lang && g.lang) x.lang = g.lang;
       if (!x.e && g.e) x.e = g.e;
       if (!x.lo && g.lo) x.lo = g.lo;
@@ -696,7 +696,7 @@ function card(g){
         <span class="pub">${esc(g.pub)}${g.cat ? " · " + esc(g.cat) : ""}</span>
         <span class="tags">${tags}</span>
       </span>
-      <span class="jp"><span class="lab">日本語</span>${jp}${mixed}${priceHtml(g)}<span class="date">${g.d ? fmtDate(g.d) : released(g) ? "発売日の記載なし" : "発売日未定"}</span></span>
+      <span class="jp"><span class="lab">日本語</span>${jp}${mixed}${priceHtml(g)}<span class="date">${g.d ? fmtDate(g.d) + (g.rt && !released(g) ? " " + g.rt.replace(/^0/, "") : "") : released(g) ? "発売日の記載なし" : "発売日未定"}</span></span>
     </button>
     ${detail}
   </article>`;
