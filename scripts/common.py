@@ -200,3 +200,17 @@ def sale_end(s):
         return (datetime.datetime.strptime(s, "%m/%d/%Y %H:%M:%S") + datetime.timedelta(hours=9)).strftime("%m/%d/%Y")
     except ValueError:
         return s.split(" ")[0]
+
+
+def jst_release(rd):
+    """ストアの releaseDate（UTC）を日本時間の (日付, 時刻) に。時刻が 00:00 のときは時刻なし。2100年以降の仮の日付は (None, None)"""
+    import datetime
+    rd = rd or ""
+    if not rd or rd[:4] >= "2100":
+        return None, None
+    try:
+        t = datetime.datetime.fromisoformat(rd[:19]) + datetime.timedelta(hours=9)
+    except ValueError:
+        return rd[:10], None
+    hm = t.strftime("%H:%M")
+    return t.date().isoformat(), (hm if hm != "00:00" else None)

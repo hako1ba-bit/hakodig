@@ -19,11 +19,17 @@ missing = [i for i in cat if i not in det]
 first = [i for i in missing if (cat[i].get("d") or "9999") >= recent]
 rest = sorted((i for i in missing if (cat[i].get("d") or "9999") < recent), key=lambda i: cat[i].get("d") or "", reverse=True)
 refresh = [i for i, r in det.items() if i in cat and (cat[i].get("d") or "9999") >= today(-14) and r.get("at", "") <= week_ago]
+# 新しく載った・アプリの日付が近いのに、ストアの一覧に発売日も価格もない作品は、毎回ページを見に行く
+# （一覧に日付がなくてもページには発売日時が入っていることがある。予告なしの配信を早く発売中にするため）
+fs, app = load_json("first_seen.json", {}), load_json("release_dates.json", {})
+watch = [i for i, r in cat.items() if not r.get("d") and not r.get("pr")
+         and (i in fs or today(-30) <= (app.get(i) or "0") <= today(1))]
 # 全作品を少しずつ、確認日の古い順に確認し直す（アップデートで日本語が付いた作品などを拾う）
-done_q = set(first + rest + refresh)
+done_q = set(watch + first + rest + refresh)
 rotate = sorted((i for i in det if i in cat and i not in done_q), key=lambda i: det[i].get("at", ""))[:args.rotate] if not missing else []
-queue = first + rest + refresh + rotate
-print(f"details: {len(det)} done, {len(missing)} missing, {len(refresh)} to refresh, {len(rotate)} to recheck", flush=True)
+ws = set(watch)
+queue = watch + [i for i in first + rest + refresh if i not in ws] + rotate
+print(f"details: {len(det)} done, {len(watch)} dateless to watch, {len(missing)} missing, {len(refresh)} to refresh, {len(rotate)} to recheck", flush=True)
 
 end = time.time() + args.minutes * 60
 n = 0
@@ -50,9 +56,11 @@ for gid in queue:
                                     int(bool(ja.get("areSubtitlesSupported")))] if ja else [0, 0, 0])
         rec = {"id": gid, "lang": lang, "pa": int("XPA" in (p.get("capabilities") or {})),
                "desc": " ".join((p.get("description") or "").split())[:200], "at": T}
-        rd = (p.get("releaseDate") or "")[:10]
-        if rd and rd < "2100":
-            rec["d"] = rd
+        d, rt = jst_release(p.get("releaseDate"))
+        if d:
+            rec["d"] = d
+            if rt:
+                rec["rt"] = rt
         old = det.get(gid) or {}
         if not old.get("none") and old.get("pa") == 0 and rec["pa"] == 1:
             new_pa.append(gid)

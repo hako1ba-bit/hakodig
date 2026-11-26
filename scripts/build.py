@@ -103,8 +103,9 @@ for gid, r in cat.items():
     # 発売中かどうかの判定に使うのは「ストアの発売日時」だけ。アプリ側（release_dates）や手動の発売日は表示用
     if any(x and x < "2100" for x in (r.get("d"), dt.get("d"))):
         g["sd"] = 1  # 発売日はストアの情報
-        if r.get("rt") and r.get("d") == g["d"]:
-            g["rt"] = r["rt"]  # 発売時刻（日本時間）。この時刻を過ぎるまでは発売中にしない
+        rt = r.get("rt") if r.get("d") else dt.get("rt")  # ストアの発売時刻（日本時間）
+        if rt:
+            g["rt"] = rt  # 発売時刻（日本時間）。この時刻を過ぎるまでは発売中にしない
     if gid in dlc and dlc[gid]["items"]:
         g["dl"] = len(dlc[gid]["items"])  # DLCの数（中身はカードで押したときに dlc/ID.json を読む）
     if r.get("ge") and r.get("gp"):
