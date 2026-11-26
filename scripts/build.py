@@ -245,14 +245,8 @@ if str(wk) >= WEEKLY_FROM:
     hit = [g for g in games if g.get("pr") and g["pr"][2] and not g.get("dm") and g["id"] not in ex
            and wb["since"] <= (g.get("ss") or "0000")[:10] <= wb["until"]]
     if len(hit) >= 50:
-        # 終わりは、いちばん多い終了日（ふつうは翌週火曜の週替わりセール）。それより後に終わるものがあれば一言添える
-        ec = Counter(g["pr"][3] for g in hit if g["pr"][3]).most_common()
-        end = ec[0][0] if ec else ""
-        per = f"{wk.month}/{wk.day}〜" + (f"{int(end[:2])}/{int(end[3:5])}" if end else "")
-        if any(e[6:] + e[:2] + e[3:5] > end[6:] + end[:2] + end[3:5] for e, _ in ec[1:]):
-            per += "（一部はそれ以降も）"
         big.append({"n": "今週のセール", "tag": "毎週のセール", "w": 1, "s": wb["since"], "u": wb["until"],
-                    "e": [], "p": per})
+                    "e": [], "p": f"{wk.month}/{wk.day}〜"})
 for e, n in ends.most_common():
     if n >= 400 and e not in used:
         big.append({"n": f"{int(e[:2])}/{int(e[3:5])}までの大型セール", "e": [e]})
