@@ -55,6 +55,8 @@ jobs:
           # 朝の回か夕方の回かは、実際に動いた時刻（日本時間）で決める（GitHubの定時実行は大きく遅れることがあるため）
           # 16時より前は朝の回（遅れて動いた朝の予備の回が「夕方」と扱われ、本来の夕方の回が飛ばされるのを防ぐ）
           if [ "$hour" -lt 16 ]; then slot=morning; eve=0; else slot=evening; eve=1; fi
+          # 0〜3時台の手動更新は朝の回に数えない（数えると 4時からの朝の定時更新が「済み」で飛ばされる）
+          if [ "$hour" -lt 4 ]; then slot=night; fi
           # 定時の起動：GitHubの定時実行、またはCloudflareからの合図（scheduled=yes）
           sched=no
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.scheduled }}" = "yes" ]; then sched=yes; fi
