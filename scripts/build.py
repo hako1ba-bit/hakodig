@@ -148,6 +148,8 @@ for gid, r in cat.items():
         g["rs"] = 1  # 手動で発売済みに指定
     elif not g.get("sd") and gid in low:
         g["rs"] = 1  # 一度でも価格が付いた作品は発売済み（販売終了で価格が消えても発売予定に戻さない）
+    if dt.get("np"):
+        g["np"] = 1  # ストアページに単品の販売がない
     if r.get("big"):
         g["big"] = 1  # インストールサイズが1GB以上（中身が配信されている目印）
     if r.get("xpa") or dt.get("pa"):
@@ -183,12 +185,17 @@ def is_released(g):  # src/template.html の released() と同じ判定（ルー
                 or not g["id"].startswith("9") or "XCloud" in g["pl"] or g.get("big") or g.get("rs"))
 rel_titles = sorted({nt(g["t"]) for g in games if is_released(g)}, key=len, reverse=True)
 rel_set = set(rel_titles)
-sib, hidden, keep = 0, 0, []
+sib, hidden, keep, husk = 0, 0, [], []
 for g in games:
     t = nt(g["t"])
     # サウンドトラック・アートブックだけの商品は表示しない（ゲーム付きのエディションは残す）
     if SOUND.search(t) and not WITHGAME.search(t):
         hidden += 1
+        continue
+    # ストアの残骸：ストアページの発売日を過ぎても、そのページに自分の販売がなく（ほかの商品の販売だけ）価格もゲームパスもない（デラックス版の中身・販売の終わったセット版など）は表示しない
+    if g.get("np") and g.get("sd") and g["d"] < T and g.get("pr") is None and not g["gp"]:
+        hidden += 1
+        husk.append(g["t"])
         continue
     # 予約版: 発売日を過ぎた、または本編が発売済みなら表示しない
     if PRE.search(t) and ((g["d"] and g["d"] <= T) or PRE.sub("", t).strip() in rel_set):
@@ -203,7 +210,7 @@ for g in games:
             sib += 1
             break
 games = keep
-print("hidden (pre-orders, soundtracks):", hidden)
+print("hidden (pre-orders, soundtracks, store husks):", hidden, "husks:", husk)
 print("dateless editions of released games:", sib)
 
 # 最初に読み込む分（直近2週間・発売予定）と、後から読み込む分に分ける

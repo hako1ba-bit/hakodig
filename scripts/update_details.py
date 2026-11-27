@@ -59,6 +59,9 @@ for gid in queue:
                "desc": " ".join((p.get("description") or "").split())[:200], "at": T}
         # 一覧にまだ価格がない作品のために、ページの価格も残す（build.py は一覧に価格がないときだけ使う）
         prods = (st or {}).get("core2", {}).get("products", {}) or {}
+        av = prods.get("availabilitySummaries")
+        if av and not av.get(gid):
+            rec["np"] = 1  # ページが別の商品の販売しか持っていない（デラックス版の中身・旧版の残骸など）。build.py で非表示
         for sku in ((prods.get("availabilitySummaries") or {}).get(gid) or {}).values():
             pz = [a.get("price") or {} for a in (sku or {}).values() if "Purchase" in (a.get("actions") or [])]
             pz = [x for x in pz if x.get("msrp") is not None]
