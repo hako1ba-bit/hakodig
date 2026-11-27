@@ -203,7 +203,7 @@ def sale_end(s):
 
 
 def jst_release(rd):
-    """ストアの releaseDate（UTC）を日本時間の (日付, 時刻) に。時刻が 00:00 のときは時刻なし。2100年以降の仮の日付は (None, None)"""
+    """ストアの releaseDate（UTC）を日本時間の (日付, 時刻) に。2100年以降の仮の日付は (None, None)"""
     import datetime
     rd = rd or ""
     if not rd or rd[:4] >= "2100":
@@ -212,5 +212,4 @@ def jst_release(rd):
         t = datetime.datetime.fromisoformat(rd[:19]) + datetime.timedelta(hours=9)
     except ValueError:
         return rd[:10], None
-    hm = t.strftime("%H:%M")
-    return t.date().isoformat(), (hm if hm != "00:00" else None)
+    return t.date().isoformat(), t.strftime("%H:%M")
