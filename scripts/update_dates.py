@@ -53,8 +53,9 @@ def main():
     for k, app in times.items():
         r, dt = by_id.get(k) or {}, det.get(k) or {}
         sd, srt = (r.get("d"), r.get("rt")) if r.get("d") else (dt.get("d"), dt.get("rt"))
-        if sd and k not in cmp:
-            store = f"{sd} {srt or '00:00'}"
+        # 比べるのは、ストアに時刻まで入った新しい作品だけ（古い作品や時刻のない日付は比べても意味がない）
+        if sd and srt and app >= "2026-11-27" and k not in cmp:
+            store = f"{sd} {srt}"
             cmp[k] = {"t": r.get("t", ""), "app": app, "store": store, "same": app == store}
     save_json("app_times.json", dict(sorted(times.items())))
     save_json("time_compare.json", cmp)
