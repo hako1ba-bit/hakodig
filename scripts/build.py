@@ -174,7 +174,9 @@ SOUND = re.compile(r"soundtrack|サウンドトラック|\bost\b|artbook|アー�
 WITHGAME = re.compile(r"edition|エディション|bundle|バンドル|版", re.I)
 PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
 PREVIEW = re.compile(r"game preview|ゲーム ?プレビュー", re.I)
-def is_released(g):  # src/template.html の released() と同じ判定（ルールは CLAUDE.md「発売中・発売予定の分け方」）
+# src/template.html の released1 と同じ式（CLAUDE.md「発売中・発売予定の分け方」の 1→2→3 の順）。
+# 画面の発売中・発売予定はページを開いた時点で決まる。ここ（サイトを作った時点）の結果は、予約版を隠す・別エディションの目印に使うだけ
+def is_released(g):
     if g.get("sd"):  # ストアに発売日がある → その日時（日本時間）を過ぎ、価格（無料を含む）かゲームパスがあれば発売中
         due = g["d"] < T or (g["d"] == T and (g.get("rt") or "00:00") <= NOW_HM)
         return due and (g["d"] < APP_WAIT or g.get("pr") is not None or bool(g["gp"]))  # 最近の作品は価格が入るまで発売予定

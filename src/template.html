@@ -447,7 +447,7 @@ let FULL = false;
 const ME = {user: null, favs: new Set(), hides: new Set(), snaps: {}};
 let NOTICE = [];
 const CM = {}, CMN = {}, CMT = {}, DRAFT = {};
-const TODAY = "__TODAY__";
+const TODAY = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);  // ページを開いた日の日付（日本時間）。サイトを作った日ではない
 const APP_WAIT = "__APP_WAIT__";  // アプリ側の日付が過ぎても、30日間はストアに発売日が入るまで発売予定
 const BIGS = __BIG__;  // 大型セール [{n:名前, e:[終了日 MM/DD/YYYY]}]
 let BIG = null;        // 選んでいる大型セール
@@ -709,12 +709,9 @@ const onSale = g => !!(g.price && g.price.off > 0);
 const viewTab = () => $("#q").value.trim() || ($("#f-coming").checked && (tab === "released" || tab === "upcoming")) ? "all" : tab;
 // 発売日の記載がない（仮の日付 9998年など）作品は、サブスク対象・購入できる価格・ストアの評価のどれかがあれば発売済み
 const PREVIEW = /game preview|ゲーム ?プレビュー/i;
-// Xbox 360・XBLA など旧世代の作品はIDが英字で始まる（今の作品は 9 から始まる）
-// 発売中かどうか（ルールは CLAUDE.md「発売中・発売予定の分け方」）。ストアの発売日時があればそれだけで決める。
-// ストアに発売日がない作品は「ストアで買える・遊べるしるし」で決める（アプリ側や手動の発売日は表示用で、判定に使わない）
-// いまの日本時間 "YYYY-MM-DD HH:MM"（ページを開いた日付で判定する。サイトを作った日付 TODAY は日付が変わると古くなるので使わない）
+// 発売中・発売予定の判定（CLAUDE.md「発売中・発売予定の分け方」の順番どおり。scripts/build.py の is_released と同じ）
+// 日付と時刻は、ページを開いた瞬間の日本時間で比べる（サイトを作った日時は使わない）
 const NOW_JST = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace("T", " ");
-// 発売中かどうか（ルールは CLAUDE.md「発売中・発売予定の分け方」。scripts/build.py の is_released と同じ）
 const released1 = g => g.sd ? ((g.d + " " + (g.rt || "00:00")) <= NOW_JST() && (g.d < APP_WAIT || g.pr != null || g.gp.length > 0))
   : (g.d && g.d >= APP_WAIT) ? false
   : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0) || PREVIEW.test(g.t) || !/^9/.test(g.id) || !!g.rs || g.pl.includes("XCloud") || !!g.big);
