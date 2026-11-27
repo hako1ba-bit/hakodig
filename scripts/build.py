@@ -194,8 +194,8 @@ for g in games:
     if SOUND.search(t) and not WITHGAME.search(t):
         hidden += 1
         continue
-    # ストアの残骸：発売日が先の作品を除き（日付がない・過ぎた）、ストアページに自分の販売がなく（ほかの商品の販売だけ）価格もゲームパスもない（デラックス版の中身・販売の終わったセット版など）は表示しない
-    if g.get("np") and not (g["d"] and g["d"] >= T) and g.get("pr") is None and not g["gp"]:
+    # ストアの残骸：発売日（ストアかアプリ）を過ぎたのに、ストアページに自分の販売がなく（ほかの商品の販売だけ）価格もゲームパスもない（デラックス版の中身・販売の終わったセット版など）は表示しない
+    if g.get("np") and g["d"] and g["d"] < T and g.get("pr") is None and not g["gp"]:
         hidden += 1
         husk.append(g["t"])
         continue
