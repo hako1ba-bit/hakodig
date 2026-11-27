@@ -56,6 +56,15 @@ for gid in queue:
                                     int(bool(ja.get("areSubtitlesSupported")))] if ja else [0, 0, 0])
         rec = {"id": gid, "lang": lang, "pa": int("XPA" in (p.get("capabilities") or {})),
                "desc": " ".join((p.get("description") or "").split())[:200], "at": T}
+        # 一覧にまだ価格がない作品のために、ページの価格も残す（build.py は一覧に価格がないときだけ使う）
+        prods = (st or {}).get("core2", {}).get("products", {}) or {}
+        for sku in ((prods.get("availabilitySummaries") or {}).get(gid) or {}).values():
+            pz = [a.get("price") or {} for a in (sku or {}).values() if "Purchase" in (a.get("actions") or [])]
+            pz = [x for x in pz if x.get("msrp") is not None]
+            if pz:
+                x = min(pz, key=lambda x: x.get("listPrice", x["msrp"]))
+                rec["pr"] = [x.get("listPrice", x["msrp"]), x["msrp"], round(x.get("discountPercentage") or 0), ""]
+                break
         d, rt = jst_release(p.get("releaseDate"))
         if d:
             rec["d"] = d

@@ -99,7 +99,8 @@ for gid, r in cat.items():
     dt = det.get(gid, {})
     g = {"id": gid, "t": r["t"], "pub": r.get("pub", ""), "cat": r.get("cat", ""),
          "d": next((x for x in (r.get("d"), dt.get("d"), rel_dates.get(gid), man_dates.get(gid)) if x and x < "2100"), None), "pl": r.get("pl", []), "gp": r.get("gp", []),
-         "pr": r.get("pr"), "img": r.get("img")}
+         "pr": r.get("pr") or dt.get("pr"),  # 一覧に価格がまだないときはストアページの価格
+         "img": r.get("img")}
     # 発売中かどうかの判定に使うのは「ストアの発売日時」だけ。アプリ側（release_dates）や手動の発売日は表示用
     if any(x and x < "2100" for x in (r.get("d"), dt.get("d"))):
         g["sd"] = 1  # 発売日はストアの情報
