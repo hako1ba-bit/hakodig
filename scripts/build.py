@@ -173,8 +173,9 @@ WITHGAME = re.compile(r"edition|エディション|bundle|バンドル|版", re.
 PRE = re.compile(r"\s*[-–(（]?\s*(pre-?order|予約(購入|特典)?版?)\s*[)）]?\s*$", re.I)
 PREVIEW = re.compile(r"game preview|ゲーム ?プレビュー", re.I)
 def is_released(g):  # src/template.html の released() と同じ判定（ルールは CLAUDE.md「発売中・発売予定の分け方」）
-    if g.get("sd"):  # ストアに発売日がある → その日時（日本時間）を過ぎたら発売中
-        return g["d"] < T or (g["d"] == T and (g.get("rt") or "00:00") <= NOW_HM)
+    if g.get("sd"):  # ストアに発売日がある → その日時（日本時間）を過ぎ、価格（無料を含む）かゲームパスがあれば発売中
+        due = g["d"] < T or (g["d"] == T and (g.get("rt") or "00:00") <= NOW_HM)
+        return due and (g["d"] < APP_WAIT or g.get("pr") is not None or bool(g["gp"]))  # 最近の作品は価格が入るまで発売予定
     if g["d"] and g["d"] >= APP_WAIT:  # ストアに日付がなく、アプリ・手動の日付がある（過ぎて30日以内も）→ ストアに日付が入るまで発売予定
         return False
     # ストアに日付がない作品（古い作品・販売終了など）は、発売済みの目印があれば発売中

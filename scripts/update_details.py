@@ -22,8 +22,9 @@ refresh = [i for i, r in det.items() if i in cat and (cat[i].get("d") or "9999")
 # 新しく載った・アプリの日付が近いのに、ストアの一覧に発売日も価格もない作品は、毎回ページを見に行く
 # （一覧に日付がなくてもページには発売日時が入っていることがある。予告なしの配信を早く発売中にするため）
 fs, app = load_json("first_seen.json", {}), load_json("release_dates.json", {})
-watch = [i for i, r in cat.items() if not r.get("d") and not r.get("pr")
-         and (i in fs or today(-30) <= (app.get(i) or "0") <= today(1))]
+watch = [i for i, r in cat.items() if not r.get("pr") and (
+         (not r.get("d") and (i in fs or today(-30) <= (app.get(i) or "0") <= today(1)))
+         or (r.get("d") and today(-30) <= r["d"] <= today(1)))]  # 発売日が近い・過ぎたばかりなのに価格がない作品も
 # 全作品を少しずつ、確認日の古い順に確認し直す（アップデートで日本語が付いた作品などを拾う）
 done_q = set(watch + first + rest + refresh)
 rotate = sorted((i for i in det if i in cat and i not in done_q), key=lambda i: det[i].get("at", ""))[:args.rotate] if not missing else []
