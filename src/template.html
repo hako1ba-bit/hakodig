@@ -712,9 +712,10 @@ const PREVIEW = /game preview|ゲーム ?プレビュー/i;
 // Xbox 360・XBLA など旧世代の作品はIDが英字で始まる（今の作品は 9 から始まる）
 // 発売中かどうか（ルールは CLAUDE.md「発売中・発売予定の分け方」）。ストアの発売日時があればそれだけで決める。
 // ストアに発売日がない作品は「ストアで買える・遊べるしるし」で決める（アプリ側や手動の発売日は表示用で、判定に使わない）
-const NOW_HM = () => { const t = new Date(Date.now() + 9 * 3600e3); return t.toISOString().slice(11, 16); };
+// いまの日本時間 "YYYY-MM-DD HH:MM"（ページを開いた日付で判定する。サイトを作った日付 TODAY は日付が変わると古くなるので使わない）
+const NOW_JST = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace("T", " ");
 // 発売中かどうか（ルールは CLAUDE.md「発売中・発売予定の分け方」。scripts/build.py の is_released と同じ）
-const released1 = g => g.sd ? ((g.d < TODAY || (g.d === TODAY && (g.rt || "00:00") <= NOW_HM())) && (g.d < APP_WAIT || g.pr != null || g.gp.length > 0))
+const released1 = g => g.sd ? ((g.d + " " + (g.rt || "00:00")) <= NOW_JST() && (g.d < APP_WAIT || g.pr != null || g.gp.length > 0))
   : (g.d && g.d >= APP_WAIT) ? false
   : (g.gp.length > 0 || !!g.rc || !!(g.pr && g.pr[0] > 0) || PREVIEW.test(g.t) || !/^9/.test(g.id) || !!g.rs || g.pl.includes("XCloud") || !!g.big);
 // まとめたカードは、ストアに発売日がある版があればその版で判断し、なければどれか1つの版が発売中なら発売中
