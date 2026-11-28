@@ -113,6 +113,9 @@ for gid, r in cat.items():
         g["ge"] = r["ge"]  # ゲームパスなどに入った日
     if gid in sale_start and r.get("pr") and r["pr"][2]:
         g["ss"] = sale_start[gid]  # セールの開始日（ハコディグが見つけた日）
+        # 予約中の割引がそのまま発売後も続いている作品は、発売日をセールの開始日にする（発売前に始まった大型セールに入れない）
+        if g.get("d") and g["d"] < "2100" and g["d"] > g["ss"][:10]:
+            g["ss"] = g["d"]
     if gid in first_seen:
         g["fs"] = first_seen[gid]
     if r.get("e"):
